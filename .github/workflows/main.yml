@@ -1,37 +1,34 @@
-on: [push]
-name: Deploy_Node_Container_Azure_ACR
+name: Deploy DotNet project to function app with a Linux environment
+
+on:
+  [push]
+
+env:
+  AZURE_FUNCTIONAPP_NAME: func-image-ingest  # set this to your application's name
+  AZURE_FUNCTIONAPP_PACKAGE_PATH: './image-ingest/Functions/Functions.csproj'    # set this to the path to your web app project, defaults to the repository root
+  DOTNET_VERSION: '6.0.400'              # set this to the dotnet version to use
 
 jobs:
-    build-and-deploy:
-        runs-on: ubuntu-latest
-        steps:
-        # checkout the repo
-        - name: 'Checkout GitHub Action'
-          uses: actions/checkout@main
-          
-        - name: 'Login via Azure CLI'
-          uses: azure/login@v1
-          with:
-            creds: ${{ secrets.AZURE_CREDENTIALS }}
-        
-        - name: 'Build and push image'
-          uses: azure/docker-login@v1
-          with:
-            login-server: ${{ secrets.REGISTRY_LOGIN_SERVER }}
-            username: ${{ secrets.REGISTRY_USERNAME }}
-            password: ${{ secrets.REGISTRY_PASSWORD }}
-        - run: |
-            docker build ./server/ -t ${{ secrets.REGISTRY_LOGIN_SERVER }}/github/node-web-app:v${{ github.run_id }} -t ${{ secrets.REGISTRY_LOGIN_SERVER }}/github/node-web-app:latest
-            docker push ${{ secrets.REGISTRY_LOGIN_SERVER }}/github/node-web-app:v${{ github.run_id }}
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    steps:
+    - name: 'Checkout GitHub action'
+      uses: actions/checkout@v2
 
-        - name: 'Deploy to Azure Container Instances'
-          uses: 'azure/aci-deploy@v1'
-          with:
-            resource-group: ${{ secrets.RESOURCE_GROUP }}
-            dns-name-label: ${{ secrets.RESOURCE_GROUP }}${{ github.run_id }}
-            image: ${{ secrets.REGISTRY_LOGIN_SERVER }}/github/node-web-app:v${{ github.run_id }}
-            registry-login-server: ${{ secrets.REGISTRY_LOGIN_SERVER }}
-            registry-username: ${{ secrets.REGISTRY_USERNAME }}
-            registry-password: ${{ secrets.REGISTRY_PASSWORD }}
-            name: aci-node-web-app
-            location: 'west europe'
+    - name: Setup DotNet ${{ env.DOTNET_VERSION }} Environment
+      uses: actions/setup-dotnet@v1
+      with:
+        dotnet-version: ${{ env.DOTNET_VERSION }}
+
+    - name: 'Resolve Project Dependencies Using Dotnet'
+      shell: bash
+      run: |
+        pushd './${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}'
+        dotnet build --configuration Release --output ./output
+        popd
+    - name: 'Run Azure Functions action'
+      uses: Azure/functions-action@v1
+      with:
+        app-name: ${{ env.AZURE_FUNCTIONAPP_NAME }}
+        package: '${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}/output'
+        publish-profile: ${{ secrets.AZURE_FUNCTIONAPP_PUBLISH_PROFILE }}
