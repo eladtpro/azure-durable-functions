@@ -45,9 +45,6 @@ public class DurableStorage : IDurableStorage
     public void CLear() =>
         this.Images.Clear();
 
-    public IDictionary<string, ImageMetadata> Get() =>
-        this.Images;
-
     [FunctionName(nameof(DurableStorage))]
     public static Task Run([EntityTrigger] IDurableEntityContext ctx)
         => ctx.DispatchAsync<DurableStorage>();

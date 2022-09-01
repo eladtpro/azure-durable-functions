@@ -3,7 +3,7 @@ namespace ImageIngest.Functions;
 public static class CheckBatch
 {
 
-    [FunctionName("CheckBatch")]
+    [FunctionName(nameof(CheckBatch))]
     public static async Task<string> Run(
         [ActivityTrigger] string @namespace,
         [DurableClient] IDurableEntityClient client,

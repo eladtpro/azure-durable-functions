@@ -3,7 +3,7 @@ using Azure.Storage.Blobs;
 namespace ImageIngest.Functions;
 public class Cleaner
 {
-    [FunctionName("Cleaner")]
+    [FunctionName(nameof(Cleaner))]
     public async Task<bool> Run(
         [BlobTrigger("zip/{name}", Connection = "AzureWebJobsZipStorage")] Stream blob, string name,
         [Blob("images", Connection = "AzureWebJobsStorage")] BlobContainerClient blobContainerClient,

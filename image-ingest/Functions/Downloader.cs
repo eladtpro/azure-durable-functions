@@ -2,7 +2,7 @@ namespace ImageIngest.Functions;
 public static class Downloader
 {
 
-    [FunctionName("Downloader")]
+    [FunctionName(nameof(Downloader))]
     public static Stream Run(
         [ActivityTrigger] string name,
         [Blob("images/{name}", FileAccess.Write, Connection = "AzureWebJobsStorage")] Stream blob,

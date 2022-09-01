@@ -11,6 +11,6 @@ public class ActivityAction
 
     public override string ToString()
     {
-        return $"CurrentBatchId: {CurrentBatchId}, OverrideBatchId: {OverrideBatchId}, CurrentStatus: {CurrentStatus}, OverrideStatus: {OverrideStatus}";
+        return $"CurrentBatchId: {CurrentBatchId}, OverrideBatchId: {OverrideBatchId}, CurrentStatus: {CurrentStatus}, OverrideStatus: {OverrideStatus}, Namespace: {Namespace}";
     }
 }
