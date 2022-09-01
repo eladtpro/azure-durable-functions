@@ -4,7 +4,7 @@ namespace ImageIngest.Functions;
 public class Cleaner
 {
     [FunctionName(nameof(Cleaner))]
-    public async Task<bool> Run(
+    public async Task Run(
         [BlobTrigger("zip/{name}", Connection = "AzureWebJobsZipStorage")] Stream blob, string name,
         [Blob("images", Connection = "AzureWebJobsFTPStorage")] BlobContainerClient blobContainerClient,
         [DurableClient] IDurableEntityClient client,
@@ -25,7 +25,7 @@ public class Cleaner
             v => v.Status == ImageStatus.Zipped && v.BatchId == batchId)
             .ToList();
         if (batch.Count < 1)
-            return false;
+            return;
 
         List<Task> tasks = new List<Task>();
         foreach (ImageMetadata item in batch)
@@ -44,6 +44,6 @@ public class Cleaner
             OverrideStatus = ImageStatus.Deleted
         }));
 
-        return true;
+        return;
     }
 }
