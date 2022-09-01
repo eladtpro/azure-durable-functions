@@ -9,8 +9,8 @@ public static class CheckBatch
         [DurableClient] IDurableEntityClient client,
         ILogger log)
     {
-        EntityId entityId = new EntityId(nameof(DurableStorage), @namespace);
-        EntityStateResponse<DurableStorage> state = await client.ReadEntityStateAsync<DurableStorage>(entityId);
+        EntityId entityId = new EntityId(nameof(IDurableStorage), @namespace);
+        EntityStateResponse<IDurableStorage> state = await client.ReadEntityStateAsync<IDurableStorage>(entityId);
         IList<ImageMetadata> batch = state.EntityState.Images.Values.Where(
             v => v.Status == ImageStatus.Batched)
             .ToList();

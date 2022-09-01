@@ -22,8 +22,8 @@ public class BlobListener
         };
 
         log.LogInformation($"Original blob name: {name}  details: {metadata}");
-        EntityId entityId = new EntityId(nameof(DurableStorage), metadata.Namespace);
-        await client.SignalEntityAsync<DurableStorage>(entityId, proxy => proxy.Upsert(metadata));
+        EntityId entityId = new EntityId(nameof(IDurableStorage), metadata.Namespace);
+        await client.SignalEntityAsync<IDurableStorage>(entityId, proxy => proxy.Upsert(metadata));
         log.LogInformation($"Upsert entity: {metadata}, calling Orchestrator");
 
         ActivityAction activity = new ActivityAction { Namespace = metadata.Namespace };
