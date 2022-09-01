@@ -5,7 +5,7 @@ public static class Downloader
     [FunctionName(nameof(Downloader))]
     public static Stream Run(
         [ActivityTrigger] string name,
-        [Blob("images/{name}", FileAccess.Write, Connection = "AzureWebJobsStorage")] Stream blob,
+        [Blob("images/{name}", FileAccess.Write, Connection = "AzureWebJobsFTPStorage")] Stream blob,
         //IBinder binder,
         ILogger log)
     {

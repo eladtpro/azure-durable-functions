@@ -6,7 +6,7 @@ public class Cleaner
     [FunctionName(nameof(Cleaner))]
     public async Task<bool> Run(
         [BlobTrigger("zip/{name}", Connection = "AzureWebJobsZipStorage")] Stream blob, string name,
-        [Blob("images", Connection = "AzureWebJobsStorage")] BlobContainerClient blobContainerClient,
+        [Blob("images", Connection = "AzureWebJobsFTPStorage")] BlobContainerClient blobContainerClient,
         [DurableClient] IDurableEntityClient client,
         ILogger log)
     {
