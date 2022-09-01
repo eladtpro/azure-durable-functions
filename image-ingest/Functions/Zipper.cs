@@ -6,7 +6,7 @@ public static class Zipper
     [FunctionName("Zipper")]
     public static async Task<string> Run(
         [ActivityTrigger] ActivityAction activity,
-        [Blob("zip/{activity.ZipName}.zip", FileAccess.Write, Connection = "AzureWebJobsZipStorage")] Stream blob,
+        [Blob("zip/{activity.Namespace}/{activity.CurrentBatchId}.zip", FileAccess.Write, Connection = "AzureWebJobsZipStorage")] Stream blob,
         [DurableClient] IDurableEntityClient client,
         [DurableClient] IDurableOrchestrationClient starter,
         ILogger log)
