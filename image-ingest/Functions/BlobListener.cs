@@ -28,6 +28,6 @@ public class BlobListener
         log.LogInformation($"Upsert entity: {metadata}, calling Orchestrator");
 
         ActivityAction activity = new ActivityAction { Namespace = metadata.Namespace };
-        await starter.StartNewAsync(nameof(Orchestrator), activity);
+        await starter.StartNewAsync<ActivityAction>(nameof(Orchestrator), activity);
     }
 }

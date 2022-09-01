@@ -1,5 +1,4 @@
-﻿
-using System.IO.Packaging;
+﻿using System.IO.Packaging;
 
 namespace ImageIngest.Functions;
 public static class Zipper
@@ -7,7 +6,7 @@ public static class Zipper
     [FunctionName("Zipper")]
     public static async Task<string> Run(
         [ActivityTrigger] ActivityAction activity,
-        [Blob("zip/{activity.ZipName}.zip", FileAccess.Write, Connection = "AzureWebJobsZipStorage")] Stream blob, string name,
+        [Blob("zip/{activity.ZipName}.zip", FileAccess.Write, Connection = "AzureWebJobsZipStorage")] Stream blob,
         [DurableClient] IDurableEntityClient client,
         [DurableClient] IDurableOrchestrationClient starter,
         ILogger log)
@@ -40,7 +39,6 @@ public static class Zipper
                 OverrideStatus = ImageStatus.Zipped
             }));
 
-        return $"{name}.zip";
+        return $"{activity.ZipName}.zip";
     }
 }
-

@@ -43,7 +43,5 @@ public class Cleaner
             CurrentStatus = ImageStatus.Zipped,
             OverrideStatus = ImageStatus.Deleted
         }));
-
-        return;
     }
 }
