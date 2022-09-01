@@ -6,7 +6,7 @@ public class BlobListener
         [BlobTrigger("images/{name}", Source = BlobTriggerSource.EventGrid, Connection = "AzureWebJobsFTPStorage")]
             Stream blob, string name,
         [DurableClient] IDurableEntityClient client,
-        [OrchestrationTrigger] IDurableOrchestrationContext context,
+        [DurableClient] IDurableOrchestrationClient starter,
         ILogger log)
     {
         log.LogInformation($"C# Blob trigger function Processed blob\n Name:{name} \n Size: {blob.Length} Bytes");
@@ -23,10 +23,11 @@ public class BlobListener
 
         log.LogInformation($"Original blob name: {name}  details: {metadata}");
         EntityId entityId = new EntityId(nameof(IDurableStorage), metadata.Namespace);
+
         await client.SignalEntityAsync<IDurableStorage>(entityId, proxy => proxy.Upsert(metadata));
         log.LogInformation($"Upsert entity: {metadata}, calling Orchestrator");
 
         ActivityAction activity = new ActivityAction { Namespace = metadata.Namespace };
-        await context.CallActivityAsync(nameof(Orchestrator), activity);
+        await starter.StartNewAsync(nameof(Orchestrator), activity);
     }
 }

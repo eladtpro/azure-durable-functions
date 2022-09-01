@@ -5,11 +5,11 @@ public static class CheckBatch
 
     [FunctionName(nameof(CheckBatch))]
     public static async Task<string> Run(
-        [ActivityTrigger] string @namespace,
+        [ActivityTrigger] ActivityAction activity,
         [DurableClient] IDurableEntityClient client,
         ILogger log)
     {
-        EntityId entityId = new EntityId(nameof(IDurableStorage), @namespace);
+        EntityId entityId = new EntityId(nameof(IDurableStorage), activity.Namespace);
         EntityStateResponse<IDurableStorage> state = await client.ReadEntityStateAsync<IDurableStorage>(entityId);
         IList<ImageMetadata> batch = state.EntityState.Images.Values.Where(
             v => v.Status == ImageStatus.Batched)

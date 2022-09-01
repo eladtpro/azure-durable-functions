@@ -8,6 +8,7 @@ public class ActivityAction
     public string OverrideBatchId { get; set; }
     public ImageStatus CurrentStatus { get; set; }
     public ImageStatus OverrideStatus { get; set; }
+    public IDictionary<string, Stream> Images { get; set; }
 
     public override string ToString()
     {
