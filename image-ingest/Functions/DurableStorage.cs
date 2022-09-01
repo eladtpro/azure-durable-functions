@@ -12,6 +12,8 @@ public class DurableStorage : IDurableStorage
     public long BatchSize { get; set; } =
         int.TryParse(System.Environment.GetEnvironmentVariable("BatchSize"), out int size) ? size : 10485760;
 
+    public IDictionary<string, ImageMetadata> Get() => this.Images;
+
     public void Upsert(ImageMetadata metadata)
     {
         this.Images[metadata.Name.Sanitize()] = metadata;

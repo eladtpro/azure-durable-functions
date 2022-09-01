@@ -11,7 +11,7 @@ public static class CheckBatch
     {
         EntityId entityId = new EntityId(nameof(IDurableStorage), activity.Namespace);
         EntityStateResponse<IDurableStorage> state = await client.ReadEntityStateAsync<IDurableStorage>(entityId);
-        IList<ImageMetadata> batch = state.EntityState.Images.Values.Where(
+        IList<ImageMetadata> batch = state.EntityState.Get().Values.Where(
             v => v.Status == ImageStatus.Batched)
             .ToList();
         if (batch.Count < 1)

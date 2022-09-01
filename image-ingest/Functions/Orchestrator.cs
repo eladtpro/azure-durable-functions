@@ -4,7 +4,6 @@ public class Orchestrator
     [FunctionName(nameof(Orchestrator))]
     public async Task Run(
         [OrchestrationTrigger] IDurableOrchestrationContext context, ActivityAction activity,
-        [DurableClient] IDurableEntityClient client,
         ILogger log)
     {
         //1. Check for ready batch files    ++++++++++++++++++++++++++++++++++++++
@@ -15,8 +14,8 @@ public class Orchestrator
 
         //2. Download files                 ++++++++++++++++++++++++++++++++++++++
         EntityId entityId = new EntityId(nameof(DurableStorage), activity.Namespace);
-        EntityStateResponse<DurableStorage> state = await client.ReadEntityStateAsync<DurableStorage>(entityId);
-        IList<ImageMetadata> batch = state.EntityState.Images.Values.Where(v => (v.Status == ImageStatus.Marked && v.BatchId == batchId)).ToList();
+        IDictionary<string, ImageMetadata> images = await context.CallEntityAsync<IDictionary<string, ImageMetadata>>(entityId, "Get");
+        IList<ImageMetadata> batch = images.Values.Where(v => (v.Status == ImageStatus.Marked && v.BatchId == batchId)).ToList();
         if (batch.Count < 1) return;
 
         Dictionary<string, Task<Stream>> files = new Dictionary<string, Task<Stream>>();
