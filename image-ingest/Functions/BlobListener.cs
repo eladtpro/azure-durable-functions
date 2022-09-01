@@ -1,7 +1,7 @@
 namespace ImageIngest.Functions;
-public class StorageListener
+public class BlobListener
 {
-    [FunctionName(nameof(StorageListener))]
+    [FunctionName(nameof(BlobListener))]
     public async Task Run(
         [BlobTrigger("images/{name}", Source = BlobTriggerSource.EventGrid, Connection = "AzureWebJobsStorage")]
             Stream blob, string name,
