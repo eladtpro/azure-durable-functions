@@ -9,8 +9,8 @@ public static class CheckBatch
         [DurableClient] IDurableEntityClient client,
         ILogger log)
     {
-        EntityId entityId = new EntityId(nameof(Tracker), @namespace);
-        EntityStateResponse<Tracker> state = await client.ReadEntityStateAsync<Tracker>(entityId);
+        EntityId entityId = new EntityId(nameof(DurableStorage), @namespace);
+        EntityStateResponse<DurableStorage> state = await client.ReadEntityStateAsync<DurableStorage>(entityId);
         IList<ImageMetadata> batch = state.EntityState.Images.Values.Where(
             v => v.Status == ImageStatus.Batched)
             .ToList();
@@ -20,7 +20,7 @@ public static class CheckBatch
         log.LogInformation($"found entities: {batch.Select(v => v.Name).ToArray()}");
 
         string timestamp = DateTime.Now.ToString("yyyyMMddHHmmssffff");
-        await client.SignalEntityAsync<ITracker>(entityId, proxy => proxy.UpdateAll(
+        await client.SignalEntityAsync<IDurableStorage>(entityId, proxy => proxy.UpdateAll(
             new ActivityAction
             {
                 CurrentBatchId = null,

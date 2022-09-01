@@ -4,7 +4,7 @@ using Newtonsoft.Json;
 namespace ImageIngest.Functions;
 
 [JsonObject(MemberSerialization.OptIn)]
-public class Tracker : ITracker
+public class DurableStorage : IDurableStorage
 {
     public IDictionary<string, ImageMetadata> Images { get; set; } =
         new ConcurrentDictionary<string, ImageMetadata>();
@@ -41,14 +41,14 @@ public class Tracker : ITracker
                 });
     }
 
-    
+
     public void CLear() =>
         this.Images.Clear();
 
     public IDictionary<string, ImageMetadata> Get() =>
         this.Images;
 
-    [FunctionName(nameof(Tracker))]
+    [FunctionName(nameof(DurableStorage))]
     public static Task Run([EntityTrigger] IDurableEntityContext ctx)
-        => ctx.DispatchAsync<Tracker>();
+        => ctx.DispatchAsync<DurableStorage>();
 }

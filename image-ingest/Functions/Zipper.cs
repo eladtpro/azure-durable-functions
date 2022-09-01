@@ -13,8 +13,8 @@ public static class Zipper
         [OrchestrationTrigger] IDurableOrchestrationContext context,
         ILogger log)
     {
-        EntityId entityId = new EntityId(nameof(Tracker), activity.Namespace);
-        EntityStateResponse<Tracker> state = await client.ReadEntityStateAsync<Tracker>(entityId);
+        EntityId entityId = new EntityId(nameof(DurableStorage), activity.Namespace);
+        EntityStateResponse<DurableStorage> state = await client.ReadEntityStateAsync<DurableStorage>(entityId);
         IList<ImageMetadata> batch = state.EntityState.Images.Values.Where(
             v => (v.Status == ImageStatus.Marked && v.BatchId == activity.OverrideBatchId)
             )
@@ -53,7 +53,7 @@ public static class Zipper
             }
         }
 
-        await client.SignalEntityAsync<Tracker>(entityId, proxy => proxy.UpdateAll(
+        await client.SignalEntityAsync<DurableStorage>(entityId, proxy => proxy.UpdateAll(
             new ActivityAction
             {
                 CurrentBatchId = activity.CurrentBatchId,

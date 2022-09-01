@@ -1,5 +1,5 @@
 namespace ImageIngest.Functions.Interfaces;
-public interface ITracker
+public interface IDurableStorage
 {
     void Upsert(ImageMetadata metadata);
     void UpdateAll(ActivityAction update);

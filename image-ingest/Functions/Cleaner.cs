@@ -19,8 +19,8 @@ public class Cleaner
         string @namespace = parts[0];
         string batchId = parts[1];
 
-        EntityId entityId = new EntityId(nameof(Tracker), @namespace);
-        EntityStateResponse<Tracker> state = await client.ReadEntityStateAsync<Tracker>(entityId);
+        EntityId entityId = new EntityId(nameof(DurableStorage), @namespace);
+        EntityStateResponse<DurableStorage> state = await client.ReadEntityStateAsync<DurableStorage>(entityId);
         IList<ImageMetadata> batch = state.EntityState.Images.Values.Where(
             v => v.Status == ImageStatus.Zipped && v.BatchId == batchId)
             .ToList();
@@ -36,7 +36,7 @@ public class Cleaner
 
         await Task.WhenAll(tasks);
 
-        await client.SignalEntityAsync<ITracker>(entityId, proxy => proxy.UpdateAll(
+        await client.SignalEntityAsync<IDurableStorage>(entityId, proxy => proxy.UpdateAll(
         new ActivityAction
         {
             CurrentBatchId = batchId,
