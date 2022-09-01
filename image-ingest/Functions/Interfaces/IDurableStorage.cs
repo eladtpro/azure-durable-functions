@@ -1,4 +1,5 @@
 namespace ImageIngest.Functions.Interfaces;
+
 public interface IDurableStorage
 {
     IDictionary<string, ImageMetadata> Get();

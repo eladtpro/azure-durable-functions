@@ -2,12 +2,11 @@ namespace ImageIngest.Functions;
 public class Orchestrator
 {
     [FunctionName(nameof(Orchestrator))]
-    public async Task Run(
-        [OrchestrationTrigger] IDurableOrchestrationContext context, ActivityAction activity,
-        ILogger log)
+    public async Task Run([OrchestrationTrigger] IDurableOrchestrationContext context, ILogger log)
     {
         //1. Check for ready batch files    ++++++++++++++++++++++++++++++++++++++
-        log.LogInformation($"C# Blob trigger function Processed blob\n activity:{activity}");
+        log.LogInformation($"C# OrchestrationTrigger trigger function Orchestrator called");
+        ActivityAction activity = context.GetInput<ActivityAction>();
         string batchId = await context.CallActivityAsync<string>(nameof(CheckBatch), activity);
         if (string.IsNullOrWhiteSpace(batchId))
             return;
