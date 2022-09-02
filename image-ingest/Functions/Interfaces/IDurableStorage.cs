@@ -1,9 +1,9 @@
 namespace ImageIngest.Functions.Interfaces;
 
-public interface IDurableStorage
+public interface IDurableBatchCounter
 {
-    IDictionary<string, ImageMetadata> Get();
-    void Upsert(ImageMetadata metadata);
-    void UpdateAll(ActivityAction update);
-    void CLear();
+    long Value { get; set; }
+    void Enlist();
+    Task Reset();
+    void Delete();
 }

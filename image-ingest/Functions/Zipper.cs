@@ -1,44 +1,72 @@
-﻿using System.IO.Packaging;
+﻿using System.Collections.Concurrent;
+using System.IO.Packaging;
 
 namespace ImageIngest.Functions;
 public static class Zipper
 {
+    private static string AzureWebJobsFTPStorage =>
+        System.Environment.GetEnvironmentVariable("AzureWebJobsFTPStorage");
+
     [FunctionName("Zipper")]
-    public static async Task<string> Run(
+    public static async Task<ActivityAction> Run(
         [ActivityTrigger] ActivityAction activity,
-        [Blob("zip/{activity.Namespace}/{activity.CurrentBatchId}.zip", FileAccess.Write, Connection = "AzureWebJobsZipStorage")] Stream blob,
-        [DurableClient] IDurableEntityClient client,
-        [DurableClient] IDurableOrchestrationClient starter,
+        [Blob("zip/{activity.OverrideBatchId}.zip", FileAccess.Write, Connection = "AzureWebJobsZipStorage")] Stream blob,
+        [Blob("images", Connection = "AzureWebJobsFTPStorage")] BlobContainerClient client,
         ILogger log)
     {
-        EntityId entityId = new EntityId(nameof(DurableStorage), activity.Namespace);
+        log.LogInformation($"Zipper:ActivityTrigger trigger function Processed blob\n activity:{activity}");
+
+        activity.OverrideStatus = BlobStatus.Batched;
+        IDictionary<string, Tuple<BlobClient, BlobTags, Stream>> jobs = new ConcurrentDictionary<string, Tuple<BlobClient, BlobTags, Stream>>();
+
+        await foreach (TaggedBlobItem item in client.FindBlobsByTagsAsync(activity.QueryStatusAndNamespace))
+        {
+            BlobTags tags = new BlobTags(item) { Status = activity.OverrideStatus, BatchId = activity.OverrideBatchId };
+            BlobClient blobClient = new BlobClient(AzureWebJobsFTPStorage, client.Name, item.BlobName);
+            jobs[item.BlobName] = new Tuple<BlobClient, BlobTags, Stream>(blobClient, tags, null);
+        }
+
+        IList<Task> tasks = new List<Task>();
+        foreach (var job in jobs)
+        {
+            var item = job;
+            item.Value.Item2.Modified = DateTime.Now.ToFileTimeUtc();
+            var task = item.Value.Item1.SetTagsAsync(item.Value.Item2.Tags)
+                .ContinueWith(r => item.Value.Item1.DownloadToAsync(item.Value.Item3));
+            tasks.Add(task);
+        }
+
+        await Task.WhenAll(tasks);
+
         using (Package zip = System.IO.Packaging.Package.Open(blob, FileMode.OpenOrCreate))
         {
-            foreach (var item in activity.Images)
+            foreach (var item in jobs)
             {
-                if(null != item.Value){
-                    log.LogError($"Cannot compress {item.Key}");
+                if (null == item.Value.Item3)
+                {
+                    log.LogError($"Cannot compress {item.Key}, Details: {item.Value.Item2}");
                     continue;
                 }
-
                 string destFilename = ".\\" + Path.GetFileName(item.Key);
                 Uri uri = PackUriHelper.CreatePartUri(new Uri(destFilename, UriKind.Relative));
                 if (zip.PartExists(uri)) zip.DeletePart(uri);
 
                 PackagePart part = zip.CreatePart(uri, "", CompressionOption.NotCompressed);
                 using (Stream dest = part.GetStream())
-                    item.Value.CopyTo(dest);
+                    item.Value.Item3.CopyTo(dest);
             }
         }
 
-        await client.SignalEntityAsync<IDurableStorage>(entityId, proxy => proxy.UpdateAll(
-            new ActivityAction
-            {
-                CurrentBatchId = activity.CurrentBatchId,
-                CurrentStatus = ImageStatus.Marked,
-                OverrideStatus = ImageStatus.Zipped
-            }));
+        foreach (var job in jobs)
+        {
+            var item = job;
+            item.Value.Item2.Modified = DateTime.Now.ToFileTimeUtc();
+            item.Value.Item2.Status = BlobStatus.Zipped;
+            var task = item.Value.Item1.SetTagsAsync(item.Value.Item2.Tags);
+            tasks.Add(task);
+        }
 
-        return $"{activity.ZipName}.zip";
+        await Task.WhenAll(tasks);
+        return activity;
     }
 }

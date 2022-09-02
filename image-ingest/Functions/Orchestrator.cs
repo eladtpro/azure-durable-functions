@@ -1,38 +1,30 @@
 namespace ImageIngest.Functions;
 public class Orchestrator
 {
+    public static long ZipBatchSizeMB { get; set; } =
+        long.TryParse(System.Environment.GetEnvironmentVariable("ZipBatchSizeMB"), out long size) ? size : 10485760;
+
     [FunctionName(nameof(Orchestrator))]
-    public async Task Run([OrchestrationTrigger] IDurableOrchestrationContext context, ILogger log)
+    public static async Task Run(
+        [OrchestrationTrigger] IDurableOrchestrationContext context,
+        ILogger log)
     {
         //1. Check for ready batch files    ++++++++++++++++++++++++++++++++++++++
         log.LogInformation($"C# OrchestrationTrigger trigger function Orchestrator called");
         ActivityAction activity = context.GetInput<ActivityAction>();
-        string batchId = await context.CallActivityAsync<string>(nameof(CheckBatch), activity);
-        if (string.IsNullOrWhiteSpace(batchId))
-            return;
+        activity.CurrentStatus = BlobStatus.Pending;
+        activity = await context.CallActivityAsync<ActivityAction>(nameof(Checker), activity);
 
-        //2. Download files                 ++++++++++++++++++++++++++++++++++++++
-        EntityId entityId = new EntityId(nameof(DurableStorage), activity.Namespace);
-        IDictionary<string, ImageMetadata> images = await context.CallEntityAsync<IDictionary<string, ImageMetadata>>(entityId, "Get");
-        IList<ImageMetadata> batch = images.Values.Where(v => (v.Status == ImageStatus.Marked && v.BatchId == batchId)).ToList();
-        if (batch.Count < 1) return;
+        if (activity.Total.Bytes2Megabytes() < ZipBatchSizeMB) return;
 
-        Dictionary<string, Task<Stream>> files = new Dictionary<string, Task<Stream>>();
-
-        //List<Tuple<ImageMetadata, Task<Stream>>> items = new List<Tuple<ImageMetadata, Task<Stream>>>();
-        foreach (var item in batch)
-        {
-            Task<Stream> task = context.CallActivityAsync<Stream>(nameof(Downloader), item.Name);
-            files.Add(item.Name, task);
-        }
-        await Task.WhenAll(files.Values);
-
-        activity.Images = files.ToDictionary(entry => entry.Key, entry => entry.Value.IsCompletedSuccessfully ? null : entry.Value.Result);
-        activity.CurrentBatchId = batchId;
+        //2. Create batch id
+        EntityId entityId = new EntityId(nameof(DurableBatchCounter), activity.Namespace);
+        var batchCounter = await context.CallEntityAsync<IDurableBatchCounter>(entityId, nameof(IDurableBatchCounter.Enlist));
+        activity.OverrideBatchId = $"{activity.Namespace}-{batchCounter.Value.ToString().PadLeft(4, '0')}";
 
         //3. Zip Files
-        string zipFile = await context.CallActivityAsync<string>(nameof(Zipper), activity);
-        log.LogInformation($"zip file stored successsfuly: {zipFile}");
+        activity = await context.CallActivityAsync<ActivityAction>(nameof(Zipper), activity);
 
+        log.LogInformation($"Zipper: zip file stored successsfuly: {activity}");
     }
 }
