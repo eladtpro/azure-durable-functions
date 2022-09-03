@@ -20,6 +20,7 @@ public class Orchestrator
         //2. Create batch id
         EntityId entityId = new EntityId(nameof(DurableBatchCounter), activity.Namespace);
         var batchCounter = await context.CallEntityAsync<IDurableBatchCounter>(entityId, nameof(IDurableBatchCounter.Enlist));
+        var batchCounter2 = await context.CallEntityAsync<DurableBatchCounter>(entityId, nameof(DurableBatchCounter.Enlist));
         activity.OverrideBatchId = $"{activity.Namespace}-{batchCounter.Value.ToString().PadLeft(4, '0')}";
 
         //3. Zip Files
