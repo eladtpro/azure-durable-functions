@@ -26,7 +26,7 @@
             await foreach (BlobTags tags in blobContainerClient.QueryAsync(t => 
                 t.Status ==  BlobStatus.Pending && 
                 t.Modified < DateTime.UtcNow.Add(ScavengerOutdatedThreshold).ToFileTimeUtc()))
-                log.LogInformation($"Found pending file {tags.Name}, tags: {tags.Tags}");
+                log.LogWarning($"Found pending file {tags.Name}, tags: {tags.Tags}");
         }
     }
 }
