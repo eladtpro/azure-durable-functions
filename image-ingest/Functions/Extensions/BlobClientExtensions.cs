@@ -44,6 +44,13 @@ public static class BlobClientExtensions
 
     public static async Task<Response> WriteTagsAsync(this BlobClient blobClient, BlobTags tags)
     {
+        tags.Modified = DateTime.Now.ToFileTimeUtc();
         return await blobClient.SetTagsAsync(tags.Tags);
+    }
+
+    public static async Task<Response> WriteTagsAsync(this BlobClient blobClient, BlobTags tags, Action<BlobTags> update)
+    {
+        update(tags);
+        return await BlobClientExtensions.WriteTagsAsync(blobClient, tags);
     }
 }

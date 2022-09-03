@@ -16,7 +16,6 @@ public static class Zipper
     {
         log.LogInformation($"Zipper:ActivityTrigger trigger function Processed blob\n activity:{activity}");
 
-        activity.OverrideStatus = BlobStatus.Batched;
         IDictionary<string, Tuple<BlobClient, BlobTags, Stream>> jobs = new ConcurrentDictionary<string, Tuple<BlobClient, BlobTags, Stream>>();
 
         await foreach (BlobTags tags in client.QueryAsync(t => t.Status == activity.QueryStatus && t.Namespace == activity.Namespace))
@@ -25,17 +24,15 @@ public static class Zipper
             jobs[tags.Name] = new Tuple<BlobClient, BlobTags, Stream>(blobClient, tags, null);
         }
 
-        IList<Task> tasks = new List<Task>();
-        foreach (var job in jobs)
-        {
-            var item = job;
-            item.Value.Item2.Modified = DateTime.Now.ToFileTimeUtc();
-            var task = item.Value.Item1.WriteTagsAsync(item.Value.Item2)
-                .ContinueWith(r => item.Value.Item1.DownloadToAsync(item.Value.Item3));
-            tasks.Add(task);
-        }
-
-        await Task.WhenAll(tasks);
+        activity.OverrideStatus = BlobStatus.Batched;
+        await Task.WhenAll(jobs.Select(item =>
+            item.Value.Item1.WriteTagsAsync(item.Value.Item2, t =>
+            {
+                t.Status = activity.OverrideStatus;
+                t.BatchId = activity.OverrideBatchId;
+            })
+            .ContinueWith(r => item.Value.Item1.DownloadToAsync(item.Value.Item3))
+        ));
 
         using (Package zip = System.IO.Packaging.Package.Open(blob, FileMode.OpenOrCreate))
         {
@@ -56,16 +53,7 @@ public static class Zipper
             }
         }
 
-        foreach (var job in jobs)
-        {
-            var item = job;
-            item.Value.Item2.Modified = DateTime.Now.ToFileTimeUtc();
-            item.Value.Item2.Status = BlobStatus.Zipped;
-            var task = item.Value.Item1.WriteTagsAsync(item.Value.Item2);
-            tasks.Add(task);
-        }
-
-        await Task.WhenAll(tasks);
+        await Task.WhenAll(jobs.Select(job => job.Value.Item1.WriteTagsAsync(job.Value.Item2, t => t.Status = BlobStatus.Zipped)));
         return activity;
     }
 }
