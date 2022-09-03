@@ -8,5 +8,9 @@
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="Azure.Messaging.EventHubs" Version="5.7.2" />
+    <PackageReference Include="Azure.Storage.Blobs" Version="12.13.1" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Remove="Azure.Storage.Blobs" />
   </ItemGroup>
 </Project>
