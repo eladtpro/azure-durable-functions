@@ -11,7 +11,6 @@ public class ZipListener
 
         string batchId = Path.GetFileNameWithoutExtension(blobClient.Name);
         ActivityAction activity = new ActivityAction() { CurrentStatus = BlobStatus.Zipped, CurrentBatchId = batchId };
-        await foreach (TaggedBlobItem taggedBlobItem in blobContainerClient.FindBlobsByTagsAsync(activity.QueryStatusAndNamespace))
-            await blobContainerClient.DeleteBlobIfExistsAsync(taggedBlobItem.BlobName);
+        await blobContainerClient.DeleteByQueryAsync(activity.QueryStatusAndNamespace);
     }
 }

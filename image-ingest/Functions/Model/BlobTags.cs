@@ -3,16 +3,19 @@ public class BlobTags
 {
     private IDictionary<string, string> tags = new Dictionary<string, string>();
     public IDictionary<string, string> Tags => tags;
-    public BlobTags() { }
+
+    public string BlobName { get; set; }
+    public string BlobContainerName { get; set; }
+
     public long Created
     {
-        get => (long.TryParse(tags[nameof(Created)], out long created) ? created : default(long));
+        get => tags.GetValue<long>(nameof(Created));
         set => tags[nameof(Created)] = value.ToString();
     }
 
     public long Modified
     {
-        get => (long.TryParse(tags[nameof(Modified)], out long modified) ? modified : default(long));
+        get => tags.GetValue<long>(nameof(Modified));
         set => tags[nameof(Modified)] = value.ToString();
     }
 
@@ -24,13 +27,13 @@ public class BlobTags
 
     public string Container
     {
-        get => tags.TryGetValue(nameof(Container), out string container) ? container : string.Empty;
+        get => tags.GetValue<string>(nameof(Container));
         set => tags[nameof(Container)] = value;
     }
 
     public string Namespace
     {
-        get => tags.TryGetValue(nameof(Namespace), out string @namespace) ? @namespace : string.Empty;
+        get => tags.GetValue<string>(nameof(Namespace));
         set => tags[nameof(Namespace)] = value;
     }
 
@@ -41,7 +44,7 @@ public class BlobTags
     }
     public long Length
     {
-        get => (long.TryParse(tags[nameof(Length)], out long length) ? length : default(long));
+        get => tags.GetValue<long>(nameof(Length));
         set => tags[nameof(Length)] = value.ToString();
     }
 
@@ -56,6 +59,7 @@ public class BlobTags
         tags[nameof(Modified)] = DateTime.Now.ToFileTimeUtc().ToString();
     }
 
+    public BlobTags() { }
     public BlobTags(IDictionary<string, string> origin)
     {
         Initialize();
@@ -79,6 +83,8 @@ public class BlobTags
     {
         Initialize();
         item.Tags.ToList().ForEach(x => tags[x.Key] = x.Value);
+        BlobName = item.BlobName;
+        BlobContainerName = item.BlobContainerName;
     }
 
     public override string ToString() =>

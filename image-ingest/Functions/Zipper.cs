@@ -19,11 +19,10 @@ public static class Zipper
         activity.OverrideStatus = BlobStatus.Batched;
         IDictionary<string, Tuple<BlobClient, BlobTags, Stream>> jobs = new ConcurrentDictionary<string, Tuple<BlobClient, BlobTags, Stream>>();
 
-        await foreach (TaggedBlobItem item in client.FindBlobsByTagsAsync(activity.QueryStatusAndNamespace))
+        await foreach (BlobTags tags in client.QueryAsync(activity.QueryStatusAndNamespace))
         {
-            BlobTags tags = new BlobTags(item) { Status = activity.OverrideStatus, BatchId = activity.OverrideBatchId };
-            BlobClient blobClient = new BlobClient(AzureWebJobsFTPStorage, client.Name, item.BlobName);
-            jobs[item.BlobName] = new Tuple<BlobClient, BlobTags, Stream>(blobClient, tags, null);
+            BlobClient blobClient = new BlobClient(AzureWebJobsFTPStorage, client.Name, tags.BlobName);
+            jobs[tags.BlobName] = new Tuple<BlobClient, BlobTags, Stream>(blobClient, tags, null);
         }
 
         IList<Task> tasks = new List<Task>();
@@ -31,7 +30,7 @@ public static class Zipper
         {
             var item = job;
             item.Value.Item2.Modified = DateTime.Now.ToFileTimeUtc();
-            var task = item.Value.Item1.SetTagsAsync(item.Value.Item2.Tags)
+            var task = item.Value.Item1.WriteTagsAsync(item.Value.Item2)
                 .ContinueWith(r => item.Value.Item1.DownloadToAsync(item.Value.Item3));
             tasks.Add(task);
         }
@@ -62,7 +61,7 @@ public static class Zipper
             var item = job;
             item.Value.Item2.Modified = DateTime.Now.ToFileTimeUtc();
             item.Value.Item2.Status = BlobStatus.Zipped;
-            var task = item.Value.Item1.SetTagsAsync(item.Value.Item2.Tags);
+            var task = item.Value.Item1.WriteTagsAsync(item.Value.Item2);
             tasks.Add(task);
         }
 
