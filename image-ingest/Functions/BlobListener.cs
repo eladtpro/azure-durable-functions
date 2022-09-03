@@ -1,4 +1,6 @@
 namespace ImageIngest.Functions;
+
+//TODO: enable BlobTriggerSource.EventGrid
 public class BlobListener
 {
     [FunctionName(nameof(BlobListener))]
