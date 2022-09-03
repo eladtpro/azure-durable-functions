@@ -21,8 +21,8 @@ public static class Zipper
 
         await foreach (BlobTags tags in client.QueryAsync(activity.QueryStatusAndNamespace))
         {
-            BlobClient blobClient = new BlobClient(AzureWebJobsFTPStorage, client.Name, tags.BlobName);
-            jobs[tags.BlobName] = new Tuple<BlobClient, BlobTags, Stream>(blobClient, tags, null);
+            BlobClient blobClient = new BlobClient(AzureWebJobsFTPStorage, client.Name, tags.Name);
+            jobs[tags.Name] = new Tuple<BlobClient, BlobTags, Stream>(blobClient, tags, null);
         }
 
         IList<Task> tasks = new List<Task>();

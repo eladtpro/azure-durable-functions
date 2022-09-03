@@ -11,7 +11,7 @@ public class BlobListener
         log.LogInformation($"C# Blob trigger function Processed blob\n Name:{blobClient.Name}");
 
         BlobProperties props = await blobClient.GetPropertiesAsync();
-        BlobTags tags = new BlobTags(props);
+        BlobTags tags = new BlobTags(props, blobClient);
         ActivityAction activity = new ActivityAction(tags);
         Response response = await blobClient.WriteTagsAsync(tags);
         if(response.IsError)

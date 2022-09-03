@@ -12,7 +12,7 @@ public static class Checker
         log.LogInformation(activity.QueryStatusAndNamespace);
 
         await foreach (var tag in blobContainerClient.QueryAsync(activity.QueryStatusAndNamespace))
-            activity.Total += tag.Length; ;
+            activity.Total += tag.Length;
         return activity;
     }
 }

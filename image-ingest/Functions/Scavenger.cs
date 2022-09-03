@@ -18,12 +18,12 @@
             ActivityAction activity = new ActivityAction() { CurrentStatus = BlobStatus.Zipped };
 
             await foreach (BlobTags taggedBlobItem in blobContainerClient.QueryAsync(activity.QueryStatusAndThreshold))
-                await blobContainerClient.DeleteBlobIfExistsAsync(taggedBlobItem.BlobName);
+                await blobContainerClient.DeleteBlobIfExistsAsync(taggedBlobItem.Name);
             log.LogInformation($"Deleted Zipped files");
 
             activity.CurrentStatus = BlobStatus.Pending;
             await foreach (BlobTags taggedBlobItem in blobContainerClient.QueryAsync(activity.QueryStatusAndThreshold))
-                log.LogInformation($"Found pending file {taggedBlobItem.BlobName}, tags: {taggedBlobItem.Tags}");
+                log.LogInformation($"Found pending file {taggedBlobItem.Name}, tags: {taggedBlobItem.Tags}");
      
             await foreach (BlobItem item in blobContainerClient.GetBlobsAsync(BlobTraits.Tags))
                 log.LogInformation($"Found blob {item.Name}");

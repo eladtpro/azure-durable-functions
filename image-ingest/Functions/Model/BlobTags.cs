@@ -4,9 +4,6 @@ public class BlobTags
     private IDictionary<string, string> tags = new Dictionary<string, string>();
     public IDictionary<string, string> Tags => tags;
 
-    public string BlobName { get; set; }
-    public string BlobContainerName { get; set; }
-
     public long Created
     {
         get => tags.GetValue<long>(nameof(Created));
@@ -25,6 +22,11 @@ public class BlobTags
         set => tags[nameof(Length)] = value.ToString();
     }
 
+    public string Name
+    {
+        get => tags.GetValue<string>(nameof(Name));
+        set => tags[nameof(Name)] = value;
+    }
     public string Container
     {
         get => tags.GetValue<string>(nameof(Container));
@@ -52,6 +54,7 @@ public class BlobTags
     {
         tags[nameof(Container)] = string.Empty;
         tags[nameof(Status)] = BlobStatus.Pending.ToString();
+        tags[nameof(Name)] = string.Empty;
         tags[nameof(BatchId)] = string.Empty;
         tags[nameof(Namespace)] = "default"; ;
         tags[nameof(Length)] = "0";
@@ -70,21 +73,24 @@ public class BlobTags
     {
         Initialize();
         blobItem.Tags.ToList().ForEach(x => tags[x.Key] = x.Value);
+        Name = blobItem.Name;
     }
 
-    public BlobTags(BlobProperties props)
+    public BlobTags(BlobProperties props, BlobClient client)
     {
         Initialize();
-        tags[nameof(Status)] = BlobStatus.Pending.ToString();
-        tags[nameof(Length)] = props.ContentLength.ToString();
+        Status = BlobStatus.Pending;
+        Length = props.ContentLength;
+        Name = client.Name;
+        Container = client.BlobContainerName;
     }
 
     public BlobTags(TaggedBlobItem item)
     {
         Initialize();
         item.Tags.ToList().ForEach(x => tags[x.Key] = x.Value);
-        BlobName = item.BlobName;
-        BlobContainerName = item.BlobContainerName;
+        Name = item.BlobName;
+        Container = item.BlobContainerName;
     }
 
     public override string ToString() =>
