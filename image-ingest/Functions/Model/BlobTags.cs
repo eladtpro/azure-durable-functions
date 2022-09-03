@@ -1,40 +1,85 @@
 namespace ImageIngest.Functions.Model;
 public class BlobTags
 {
+    private IDictionary<string, string> tags = new Dictionary<string, string>();
+    public IDictionary<string, string> Tags => tags;
     public BlobTags() { }
+    public long Created
+    {
+        get => (long.TryParse(tags[nameof(Created)], out long created) ? created : default(long));
+        set => tags[nameof(Created)] = value.ToString();
+    }
+
+    public long Modified
+    {
+        get => (long.TryParse(tags[nameof(Modified)], out long modified) ? modified : default(long));
+        set => tags[nameof(Modified)] = value.ToString();
+    }
+
+    public BlobStatus Status
+    {
+        get => (Enum.TryParse<BlobStatus>(tags[nameof(Status)], true, out BlobStatus status) ? status : BlobStatus.New);
+        set => tags[nameof(Length)] = value.ToString();
+    }
+
+    public string Container
+    {
+        get => tags.TryGetValue(nameof(Container), out string container) ? container : string.Empty;
+        set => tags[nameof(Container)] = value;
+    }
+
+    public string Namespace
+    {
+        get => tags.TryGetValue(nameof(Namespace), out string @namespace) ? @namespace : string.Empty;
+        set => tags[nameof(Namespace)] = value;
+    }
+
+    public string BatchId
+    {
+        get => tags.TryGetValue(nameof(BatchId), out string batchId) ? batchId : string.Empty;
+        set => tags[nameof(BatchId)] = value;
+    }
+    public long Length
+    {
+        get => (long.TryParse(tags[nameof(Length)], out long length) ? length : default(long));
+        set => tags[nameof(Length)] = value.ToString();
+    }
+
+    public void Initialize()
+    {
+        tags[nameof(Container)] = string.Empty;
+        tags[nameof(Status)] = BlobStatus.Pending.ToString();
+        tags[nameof(BatchId)] = string.Empty;
+        tags[nameof(Namespace)] = "default"; ;
+        tags[nameof(Length)] = "0";
+        tags[nameof(Created)] = DateTime.Now.ToFileTimeUtc().ToString();
+        tags[nameof(Modified)] = DateTime.Now.ToFileTimeUtc().ToString();
+    }
+
+    public BlobTags(IDictionary<string, string> origin)
+    {
+        Initialize();
+        origin.ToList().ForEach(x => tags[x.Key] = x.Value);
+    }
+
+    public BlobTags(BlobItem blobItem)
+    {
+        Initialize();
+        blobItem.Tags.ToList().ForEach(x => tags[x.Key] = x.Value);
+    }
 
     public BlobTags(BlobProperties props)
     {
-        Status = BlobStatus.Pending;
-        Length = props.ContentLength;
+        Initialize();
+        tags[nameof(Status)] = BlobStatus.Pending.ToString();
+        tags[nameof(Length)] = props.ContentLength.ToString();
     }
 
     public BlobTags(TaggedBlobItem item)
     {
-        BatchId = item.Tags[nameof(BatchId)];
-        Namespace = item.Tags[nameof(Namespace)];
-        Status = Enum.TryParse<BlobStatus>(item.Tags[nameof(Status)], true, out BlobStatus status) ? status : BlobStatus.Pending;
-        Length = long.TryParse(item.Tags[nameof(Length)], out long length) ? length : 0;
-        Created = long.TryParse(item.Tags[nameof(Created)], out long created) ? created : DateTime.Now.ToFileTimeUtc();
+        Initialize();
+        item.Tags.ToList().ForEach(x => tags[x.Key] = x.Value);
     }
-
-    public long Created { get; set; } = DateTime.Now.ToFileTimeUtc();
-    public long Modified { get; set; } = DateTime.Now.ToFileTimeUtc();
-    public BlobStatus Status { get; set; } = BlobStatus.New;
-    public string Container { get; set; }
-    public string Namespace { get; set; } = "default";
-    public string BatchId { get; set; } = string.Empty;
-    public long Length { get; set; }
-
-    public IDictionary<string, string> Tags => new Dictionary<string, string>
-        {
-            { nameof(BatchId), BatchId },
-            { nameof(Namespace), Namespace},
-            { nameof(Status), Status.ToString() },
-            { nameof(Length), Length.ToString() },
-            { nameof(Created), Created.ToString() },
-            { nameof(Modified), Modified.ToString() },
-        };
 
     public override string ToString() =>
         $"Namespace: {Namespace}, BatchId: {BatchId}, Length: {Length}, Created: {Created}, Modified: {Modified}";
