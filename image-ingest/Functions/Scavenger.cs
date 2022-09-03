@@ -25,7 +25,7 @@
             await foreach (TaggedBlobItem taggedBlobItem in blobContainerClient.FindBlobsByTagsAsync(activity.QueryStatusAndThreshold))
                 log.LogInformation($"Found pending file {taggedBlobItem.BlobName}, tags: {taggedBlobItem.Tags}");
      
-            await foreach (BlobItem item in blobContainerClient.GetBlobsAsync(BlobTraits.None, BlobStates.None, "images/"))
+            await foreach (BlobItem item in blobContainerClient.GetBlobsAsync())
                 log.LogInformation($"Found blob {item.Name}");
         }
     }
