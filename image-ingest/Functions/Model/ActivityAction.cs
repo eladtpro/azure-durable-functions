@@ -21,10 +21,10 @@ public class ActivityAction
     public BlobStatus OverrideStatus { get; set; }
 
     public string QueryStatusAndNamespace =>
-        $@"""Status""='{CurrentStatus.ToString()}' AND ""Namespace""= '{Namespace}'";
+        $@"@container='images' AND ""Status""='{CurrentStatus.ToString()}' AND ""Namespace""= '{Namespace}'";
 
     public string QueryStatusAndThreshold =>
-        $@"""Status""='{CurrentStatus.ToString()}' AND ""Modified"" < '{DateTime.UtcNow.Add(Threshold).ToFileTimeUtc()}'";
+        $@"@container='images' AND ""Status""='{CurrentStatus.ToString()}' AND ""Modified"" < '{DateTime.UtcNow.Add(Threshold).ToFileTimeUtc()}'";
 
     public override string ToString()
     {
