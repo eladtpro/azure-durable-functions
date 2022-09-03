@@ -11,7 +11,10 @@ public static class Checker
         log.LogInformation($"C# Blob trigger function Processed blob\n activity:{activity}");
         log.LogInformation(activity.QueryStatusAndNamespace);
         await foreach (TaggedBlobItem taggedBlobItem in blobContainerClient.FindBlobsByTagsAsync(activity.QueryStatusAndNamespace))
-            activity.Total += long.TryParse(taggedBlobItem.Tags[nameof(BlobTags.Length)], out long length) ? length : 0;
+        {
+            taggedBlobItem.Tags.TryGetValue(nameof(BlobTags.Length), out string length);
+            activity.Total += long.TryParse(length, out long l) ? l : 0;
+        }
 
         return activity;
     }
