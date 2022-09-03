@@ -23,7 +23,7 @@ public class BlobTags
     public BlobStatus Status { get; set; } = BlobStatus.New;
     public string Container { get; set; }
     public string Namespace { get; set; } = "default";
-    public string BatchId { get; set; }
+    public string BatchId { get; set; } = string.Empty;
     public long Length { get; set; }
 
     public IDictionary<string, string> Tags => new Dictionary<string, string>
