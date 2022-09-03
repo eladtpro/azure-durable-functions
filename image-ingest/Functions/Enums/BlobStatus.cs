@@ -6,6 +6,6 @@ public enum BlobStatus
     Pending = 1,
     Batched = 2,
     Zipped = 4,
-    Error = -1,
-    Completed = 1024
+    Error = 1024,
+    Completed = Zipped & Error
 }

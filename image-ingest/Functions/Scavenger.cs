@@ -16,9 +16,14 @@
         {
             log.LogInformation($"C# Timer trigger function executed at: {DateTime.Now}");
             ActivityAction activity = new ActivityAction() { CurrentStatus = BlobStatus.Zipped };
+
             await foreach (TaggedBlobItem taggedBlobItem in blobContainerClient.FindBlobsByTagsAsync(activity.QueryStatusAndThreshold))
                 await blobContainerClient.DeleteBlobIfExistsAsync(taggedBlobItem.BlobName);
             log.LogInformation($"Deleted Zipped files");
+
+            activity.CurrentStatus = BlobStatus.Pending;
+            await foreach (TaggedBlobItem taggedBlobItem in blobContainerClient.FindBlobsByTagsAsync(activity.QueryStatusAndThreshold))
+                log.LogInformation($"Found pending file {taggedBlobItem.BlobName}, tags: {taggedBlobItem.Tags}");
         }
     }
 }

@@ -12,6 +12,7 @@ public static class Checker
         log.LogInformation(activity.QueryStatusAndNamespace);
         await foreach (TaggedBlobItem taggedBlobItem in blobContainerClient.FindBlobsByTagsAsync(activity.QueryStatusAndNamespace))
         {
+            log.LogInformation(taggedBlobItem.Tags.ToString());
             taggedBlobItem.Tags.TryGetValue(nameof(BlobTags.Length), out string length);
             activity.Total += long.TryParse(length, out long l) ? l : 0;
         }
