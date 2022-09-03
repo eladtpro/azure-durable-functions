@@ -10,7 +10,7 @@ public class ZipListener
         log.LogInformation($"C# Blob trigger function Processed blob\n Name:{blobClient.Name}");
 
         string batchId = Path.GetFileNameWithoutExtension(blobClient.Name);
-        ActivityAction activity = new ActivityAction() { CurrentStatus = BlobStatus.Zipped, CurrentBatchId = batchId };
+        ActivityAction activity = new ActivityAction() { QueryStatus = BlobStatus.Zipped, QueryBatchId = batchId };
         await blobContainerClient.DeleteByQueryAsync(activity.QueryStatusAndNamespace);
     }
 }

@@ -19,7 +19,7 @@ public static class Zipper
         activity.OverrideStatus = BlobStatus.Batched;
         IDictionary<string, Tuple<BlobClient, BlobTags, Stream>> jobs = new ConcurrentDictionary<string, Tuple<BlobClient, BlobTags, Stream>>();
 
-        await foreach (BlobTags tags in client.QueryAsync(activity.QueryStatusAndNamespace))
+        await foreach (BlobTags tags in client.QueryAsync(t => t.Status == activity.QueryStatus && t.Namespace == activity.Namespace))
         {
             BlobClient blobClient = new BlobClient(AzureWebJobsFTPStorage, client.Name, tags.Name);
             jobs[tags.Name] = new Tuple<BlobClient, BlobTags, Stream>(blobClient, tags, null);

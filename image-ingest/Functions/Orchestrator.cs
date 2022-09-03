@@ -12,7 +12,7 @@ public class Orchestrator
         //1. Check for ready batch files    ++++++++++++++++++++++++++++++++++++++
         log.LogInformation($"C# OrchestrationTrigger trigger function Orchestrator called");
         ActivityAction activity = context.GetInput<ActivityAction>();
-        activity.CurrentStatus = BlobStatus.Pending;
+        activity.QueryStatus = BlobStatus.Pending;
         activity = await context.CallActivityAsync<ActivityAction>(nameof(Checker), activity);
 
         if (activity.Total.Bytes2Megabytes() < ZipBatchSizeMB) return;

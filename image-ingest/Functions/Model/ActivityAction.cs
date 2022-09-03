@@ -9,25 +9,25 @@ public class ActivityAction
 
     public ActivityAction(BlobTags tags)
     {
-        CurrentStatus = tags.Status;
+        QueryStatus = tags.Status;
         Namespace = tags.Namespace;
     }
 
     public long Total { get; set; }
     public string Namespace { get; set; } = "default";
-    public string CurrentBatchId { get; set; }
+    public string QueryBatchId { get; set; }
     public string OverrideBatchId { get; set; }
-    public BlobStatus CurrentStatus { get; set; }
+    public BlobStatus QueryStatus { get; set; }
     public BlobStatus OverrideStatus { get; set; }
 
     public string QueryStatusAndNamespace =>
-        $@"""Status""='{CurrentStatus.ToString()}' AND ""Namespace""= '{Namespace}'";
+        $@"""Status""='{QueryStatus.ToString()}' AND ""Namespace""= '{Namespace}'";
 
     public string QueryStatusAndThreshold =>
-        $@"""Status""='{CurrentStatus.ToString()}' AND ""Modified"" < '{DateTime.UtcNow.Add(Threshold).ToFileTimeUtc()}'";
+        $@"""Status""='{QueryStatus.ToString()}' AND ""Modified"" < '{DateTime.UtcNow.Add(Threshold).ToFileTimeUtc()}'";
 
     public override string ToString()
     {
-        return $"{Total}, CurrentBatchId: {CurrentBatchId}, OverrideBatchId: {OverrideBatchId}, CurrentStatus: {CurrentStatus}, OverrideStatus: {OverrideStatus}, Namespace: {Namespace}";
+        return $"{Total}, CurrentBatchId: {QueryBatchId}, OverrideBatchId: {OverrideBatchId}, CurrentStatus: {QueryStatus}, OverrideStatus: {OverrideStatus}, Namespace: {Namespace}";
     }
 }

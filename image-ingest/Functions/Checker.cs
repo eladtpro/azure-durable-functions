@@ -11,7 +11,8 @@ public static class Checker
         log.LogInformation($"C# Blob trigger function Processed blob\n activity:{activity}");
         log.LogInformation(activity.QueryStatusAndNamespace);
 
-        await foreach (var tag in blobContainerClient.QueryAsync(activity.QueryStatusAndNamespace))
+        // await foreach (var tag in blobContainerClient.QueryAsync(activity.QueryStatusAndNamespace))
+        await foreach (var tag in blobContainerClient.QueryAsync(t => t.Status == activity.QueryStatus && t.Namespace == activity.Namespace))
             activity.Total += tag.Length;
         return activity;
     }

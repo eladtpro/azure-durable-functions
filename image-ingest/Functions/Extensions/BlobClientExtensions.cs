@@ -2,17 +2,28 @@ namespace ImageIngest.Functions.Extensions;
 
 public static class BlobClientExtensions
 {
-    public static async IAsyncEnumerable<BlobTags> QueryAsync(this BlobContainerClient client, string query)
+    public static async IAsyncEnumerable<BlobTags> QueryAsync(this BlobContainerClient client, Func<BlobTags, bool> predicate)
     {
-        //List<BlobTags> tags = new List<BlobTags>();
-        await foreach (var page in client.FindBlobsByTagsAsync(query).AsPages())
+        await foreach (BlobItem blob in client.GetBlobsAsync(BlobTraits.Tags))
         {
-            foreach (var blob in page.Values)
-            {
-                yield return new BlobTags(blob);
-            }
+            BlobTags tags = new BlobTags(blob);
+            if (predicate(tags))
+                yield return tags;
         }
     }
+
+
+    // public static async IAsyncEnumerable<BlobTags> QueryAsync(this BlobContainerClient client, string query)
+    // {
+    //     //List<BlobTags> tags = new List<BlobTags>();
+    //     await foreach (var page in client.FindBlobsByTagsAsync(query).AsPages())
+    //     {
+    //         foreach (var blob in page.Values)
+    //         {
+    //             yield return new BlobTags(blob);
+    //         }
+    //     }
+    // }
 
     public static async Task DeleteByQueryAsync(this BlobContainerClient client, string query)
     {

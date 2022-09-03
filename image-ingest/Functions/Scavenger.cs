@@ -15,18 +15,18 @@
             ILogger log)
         {
             log.LogInformation($"C# Timer trigger function executed at: {DateTime.Now}");
-            ActivityAction activity = new ActivityAction() { CurrentStatus = BlobStatus.Zipped };
+            ActivityAction activity = new ActivityAction() { QueryStatus = BlobStatus.Zipped };
 
-            await foreach (BlobTags taggedBlobItem in blobContainerClient.QueryAsync(activity.QueryStatusAndThreshold))
-                await blobContainerClient.DeleteBlobIfExistsAsync(taggedBlobItem.Name);
+            await foreach (BlobTags tags in blobContainerClient.QueryAsync(t => 
+                t.Status == BlobStatus.Zipped && 
+                t.Modified < DateTime.UtcNow.Add(ScavengerOutdatedThreshold).ToFileTimeUtc()))
+                await blobContainerClient.DeleteBlobIfExistsAsync(tags.Name);
             log.LogInformation($"Deleted Zipped files");
 
-            activity.CurrentStatus = BlobStatus.Pending;
-            await foreach (BlobTags taggedBlobItem in blobContainerClient.QueryAsync(activity.QueryStatusAndThreshold))
-                log.LogInformation($"Found pending file {taggedBlobItem.Name}, tags: {taggedBlobItem.Tags}");
-     
-            await foreach (BlobItem item in blobContainerClient.GetBlobsAsync(BlobTraits.Tags))
-                log.LogInformation($"Found blob {item.Name}");
+            await foreach (BlobTags tags in blobContainerClient.QueryAsync(t => 
+                t.Status ==  BlobStatus.Pending && 
+                t.Modified < DateTime.UtcNow.Add(ScavengerOutdatedThreshold).ToFileTimeUtc()))
+                log.LogInformation($"Found pending file {tags.Name}, tags: {tags.Tags}");
         }
     }
 }
