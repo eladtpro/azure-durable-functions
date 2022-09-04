@@ -24,15 +24,8 @@ public static class Zipper
             jobs[tags.Name] = new Tuple<BlobClient, BlobTags, Stream>(blobClient, tags, null);
         }
 
-        activity.OverrideStatus = BlobStatus.Batched;
-        await Task.WhenAll(jobs.Select(item =>
-            item.Value.Item1.WriteTagsAsync(item.Value.Item2, t =>
-            {
-                t.Status = activity.OverrideStatus;
-                t.BatchId = activity.OverrideBatchId;
-            })
-            .ContinueWith(r => item.Value.Item1.DownloadToAsync(item.Value.Item3))
-        ));
+        //download file streams
+        await Task.WhenAll(jobs.Select(item => item.Value.Item1.DownloadToAsync(item.Value.Item3)));
 
         using (Package zip = System.IO.Packaging.Package.Open(blob, FileMode.OpenOrCreate))
         {
