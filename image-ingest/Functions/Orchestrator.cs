@@ -14,7 +14,7 @@ public class Orchestrator
         activity = await context.CallActivityAsync<ActivityAction>(nameof(Collector), activity);
 
         //Check if batch created
-        if (!string.IsNullOrWhiteSpace(activity.OverrideBatchId))
+        if (string.IsNullOrWhiteSpace(activity.OverrideBatchId))
             return;
 
         //3. Zip Files
