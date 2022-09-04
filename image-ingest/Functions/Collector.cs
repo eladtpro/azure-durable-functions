@@ -12,10 +12,7 @@ public class Collector
         [Blob("images", Connection = "AzureWebJobsFTPStorage")] BlobContainerClient blobContainerClient,
         ILogger log)
     {
-        log.LogInformation($"C# Blob trigger function Processed blob\n activity:{activity}");
-        log.LogInformation(activity.QueryStatusAndNamespace);
-
-        // await foreach (var tag in blobContainerClient.QueryAsync(activity.QueryStatusAndNamespace))
+        log.LogInformation($"[Collector] ActivityTrigger triggered Function activity:{activity}");
         List<BlobTags> tags = new List<BlobTags>();
         await foreach (BlobTags tag in blobContainerClient.QueryAsync(t => t.Status == activity.QueryStatus && t.Namespace == activity.Namespace))
         {
@@ -23,13 +20,11 @@ public class Collector
             tags.Add(tag);
         }
 
+        log.LogInformation($"[Collector] found {tags.Count} blobs in total size {activity.Total.Bytes2Megabytes()}MB(/{ZipBatchSizeMB}MB).\n {string.Join(",", tags.Select(t => $"{t.Name} ({t.Length.Bytes2Megabytes()}MB)"))}");
         if (activity.Total.Bytes2Megabytes() < ZipBatchSizeMB) return activity;
+
         //Create batch id
-        //TODO: use durable entity
-        // EntityId entityId = new EntityId(nameof(DurableBatchCounter), activity.Namespace);
-        // var batchCounter = await context.CallEntityAsync<IDurableBatchCounter>(entityId, nameof(IDurableBatchCounter.Enlist));
-        // var batchCounter2 = await context.CallEntityAsync<DurableBatchCounter>(entityId, nameof(DurableBatchCounter.Enlist));
-        activity.OverrideBatchId = $"{activity.Namespace}-{DateTime.UtcNow.ToString("yyyyMMddHHmmssfff")}";
+        activity.OverrideBatchId = ActivityAction.EnlistBatchId(activity.Namespace);
         activity.OverrideStatus = BlobStatus.Batched;
         await Task.WhenAll(tags.Select(tag =>
             new BlobClient(AzureWebJobsFTPStorage, tag.Container, tag.Name).WriteTagsAsync(tag, t =>
@@ -38,6 +33,7 @@ public class Collector
                 t.BatchId = activity.OverrideBatchId;
             })
         ));
+        log.LogInformation($"[Collector] Tags marked {tags.Count} blobs. Status: {activity.OverrideStatus}, OverrideBatchId: {activity.OverrideBatchId}. Files: {string.Join(",", tags.Select(t => $"{t.Name} ({t.Length.Bytes2Megabytes()}MB)"))}");
 
         return activity;
     }

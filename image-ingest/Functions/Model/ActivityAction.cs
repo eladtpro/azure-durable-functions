@@ -20,6 +20,35 @@ public class ActivityAction
     public BlobStatus QueryStatus { get; set; }
     public BlobStatus OverrideStatus { get; set; }
 
+    //activity.OverrideBatchId = $"{activity.Namespace}-{DateTime.UtcNow.ToString("yyyyMMddHHmmssfff")}";
+    public static string EnlistBatchId(string @namespace)
+    {
+        return $"{@namespace}-{DateTime.UtcNow.ToString("yyyyMMddHHmmssfff")}";
+        //TODO: use durable entity
+        // EntityId entityId = new EntityId(nameof(DurableBatchCounter), activity.Namespace);
+        // var batchCounter = await context.CallEntityAsync<IDurableBatchCounter>(entityId, nameof(IDurableBatchCounter.Enlist));
+    }
+
+    public static ActivityAction ExtractBatchIdAndNamespace(string batchZipFilename)
+    {
+        //string s = "My. name. is Bond._James Bond!";
+        int idx = batchZipFilename.LastIndexOf('-');
+
+        if (idx != -1)
+            throw new ArgumentException($"batchZipFilename does not contains Namespace, looking for last delimiter '-'", "batchZipFilename");
+
+        string batchId = Path.GetFileNameWithoutExtension(batchZipFilename);
+        ActivityAction activity = new ActivityAction
+        {
+            QueryBatchId = batchId,
+            Namespace = batchId[..idx] // "My. name. is Bond"
+        };
+
+        return activity;
+    }
+
+
+
     public string QueryStatusAndNamespace =>
         $@"""Status""='{QueryStatus.ToString()}' AND ""Namespace""= '{Namespace}'";
 

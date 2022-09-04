@@ -7,10 +7,11 @@ public class ZipListener
         [Blob("images", Connection = "AzureWebJobsFTPStorage")] BlobContainerClient blobContainerClient,
         ILogger log)
     {
-        log.LogInformation($"C# Blob trigger function Processed blob\n Name:{blobClient.Name}");
+        log.LogInformation($"[ZipListener] Function triggered on blob {blobClient.Name}");
+        ActivityAction activity = ActivityAction.ExtractBatchIdAndNamespace(blobClient.Name);
+        activity.QueryStatus = BlobStatus.Zipped;
 
-        string batchId = Path.GetFileNameWithoutExtension(blobClient.Name);
-        ActivityAction activity = new ActivityAction() { QueryStatus = BlobStatus.Zipped, QueryBatchId = batchId };
+        log.LogInformation($"[ZipListener] Delete by query '{activity.QueryStatusAndNamespace}'. Details {activity}");
         await blobContainerClient.DeleteByQueryAsync(activity.QueryStatusAndNamespace);
     }
 }
