@@ -19,7 +19,7 @@ public class BlobTags
     public BlobStatus Status
     {
         get => (Enum.TryParse<BlobStatus>(tags[nameof(Status)], true, out BlobStatus status) ? status : BlobStatus.New);
-        set => tags[nameof(Length)] = value.ToString();
+        set => tags[nameof(Status)] = value.ToString();
     }
 
     public string Name
