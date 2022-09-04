@@ -31,6 +31,7 @@ public class Collector
             {
                 t.Status = activity.OverrideStatus;
                 t.BatchId = activity.OverrideBatchId;
+                return t;
             })
         ));
         log.LogInformation($"[Collector] Tags marked {tags.Count} blobs. Status: {activity.OverrideStatus}, OverrideBatchId: {activity.OverrideBatchId}. Files: {string.Join(",", tags.Select(t => $"{t.Name} ({t.Length.Bytes2Megabytes()}MB)"))}");

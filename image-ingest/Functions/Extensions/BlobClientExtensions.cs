@@ -48,9 +48,9 @@ public static class BlobClientExtensions
         return await blobClient.SetTagsAsync(tags.Tags);
     }
 
-    public static async Task<Response> WriteTagsAsync(this BlobClient blobClient, BlobTags tags, Action<BlobTags> update)
+    public static async Task<Response> WriteTagsAsync(this BlobClient blobClient, BlobTags tags, Func<BlobTags, BlobTags> update)
     {
-        update(tags);
+        tags = update(tags);
         return await BlobClientExtensions.WriteTagsAsync(blobClient, tags);
     }
 }

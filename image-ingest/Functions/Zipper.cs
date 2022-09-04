@@ -19,6 +19,7 @@ public static class Zipper
         await foreach (BlobTags tags in client.QueryAsync(t => t.Status == activity.QueryStatus && t.Namespace == activity.Namespace))
         {
             BlobClient blobClient = new BlobClient(AzureWebJobsFTPStorage, client.Name, tags.Name);
+            //var lease = blobClient.GetBlobLeaseClient();
             jobs[tags.Name] = new Tuple<BlobClient, BlobTags, Stream>(blobClient, tags, null);
         }
 
@@ -43,10 +44,15 @@ public static class Zipper
                 using (Stream dest = part.GetStream())
                     item.Value.Item3.CopyTo(dest);
             }
-        }        
+        }
+        
         activity.OverrideStatus = BlobStatus.Zipped;
         log.LogInformation($"[Zipper] Zip file completed, post creation marking blobs for deletion. Activity: {activity}");
-        await Task.WhenAll(jobs.Select(job => job.Value.Item1.WriteTagsAsync(job.Value.Item2, t => t.Status = activity.OverrideStatus)));
+        await Task.WhenAll(jobs.Select(job => job.Value.Item1.WriteTagsAsync(job.Value.Item2, t =>
+        {
+            t.Status = activity.OverrideStatus;
+            return t;
+        })));
         log.LogInformation($"[Zipper] Tags marked {jobs.Count} blobs. Status: {activity.OverrideStatus}, OverrideBatchId: {activity.OverrideBatchId}. Files: {string.Join(",", jobs.Select(t => $"{t.Key} ({t.Value.Item2.Length.Bytes2Megabytes()}MB)"))}");
         return activity;
     }
