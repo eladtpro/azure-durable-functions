@@ -16,7 +16,7 @@ public static class Zipper
     {
         log.LogInformation($"[Zipper] ActivityTrigger trigger function Processed blob\n activity:{activity}");
         IDictionary<string, Tuple<BlobClient, BlobTags, Stream>> jobs = new ConcurrentDictionary<string, Tuple<BlobClient, BlobTags, Stream>>();
-        await foreach (BlobTags tags in client.QueryAsync(t => 
+        await foreach (BlobTags tags in client.QueryAsync(t =>
             t.Status == activity.QueryStatus &&
             t.BatchId == activity.QueryBatchId &&
             t.Namespace == activity.Namespace))
@@ -29,27 +29,38 @@ public static class Zipper
         //download file streams
         await Task.WhenAll(jobs.Select(item => item.Value.Item1.DownloadToAsync(item.Value.Item3)));
         log.LogInformation($"[Zipper] Downloaded {jobs.Count} blobs. Files: {string.Join(",", jobs.Select(t => $"{t.Key} ({t.Value.Item2.Length.Bytes2Megabytes()}MB)"))}");
-
-        using (Package zip = System.IO.Packaging.Package.Open(blob, FileMode.OpenOrCreate))
+        string currentKey = string.Empty;
+        try
         {
-            foreach (var item in jobs)
+            using (Package zip = System.IO.Packaging.Package.Open(blob, FileMode.OpenOrCreate))
             {
-                if (null == item.Value.Item3)
+                foreach (var item in jobs)
                 {
-                    log.LogError($"[Zipper] Cannot compress {item.Key}, Details: {item.Value.Item2}");
-                    continue;
-                }
-                string destFilename = ".\\" + Path.GetFileName(item.Key);
-                Uri uri = PackUriHelper.CreatePartUri(new Uri(destFilename, UriKind.Relative));
-                if (zip.PartExists(uri)) zip.DeletePart(uri);
+                    currentKey = item.Key;
+                    if (null == item.Value.Item3)
+                    {
+                        log.LogError($"[Zipper] Cannot compress {item.Key}, Details: {item.Value.Item2}");
+                        continue;
+                    }
+                    string destFilename = ".\\" + Path.GetFileName(item.Key);
+                    Uri uri = PackUriHelper.CreatePartUri(new Uri(destFilename, UriKind.Relative));
+                    if (zip.PartExists(uri)) zip.DeletePart(uri);
 
-                PackagePart part = zip.CreatePart(uri, "", CompressionOption.NotCompressed);
-                using (Stream dest = part.GetStream())
-                    item.Value.Item3.CopyTo(dest);
+                    PackagePart part = zip.CreatePart(uri, "", CompressionOption.NotCompressed);
+                    using (Stream dest = part.GetStream())
+                        item.Value.Item3.CopyTo(dest);
+                }
+                activity.OverrideStatus = BlobStatus.Zipped;
             }
         }
-        
-        activity.OverrideStatus = BlobStatus.Zipped;
+        catch (System.Exception ex)
+        {
+            log.LogError(ex, $"{ex.Message} Details: {activity}");
+            if(jobs.TryGetValue(currentKey, out Tuple<BlobClient, BlobTags, Stream> tuple))
+                tuple.Item2.Text = ex.Message;
+            activity.OverrideStatus = BlobStatus.Error;
+        }
+
         log.LogInformation($"[Zipper] Zip file completed, post creation marking blobs for deletion. Activity: {activity}");
         await Task.WhenAll(jobs.Select(job => job.Value.Item1.WriteTagsAsync(job.Value.Item2, t => t.Status = activity.OverrideStatus)));
         log.LogInformation($"[Zipper] Tags marked {jobs.Count} blobs. Status: {activity.OverrideStatus}, OverrideBatchId: {activity.OverrideBatchId}. Files: {string.Join(",", jobs.Select(t => $"{t.Key} ({t.Value.Item2.Length.Bytes2Megabytes()}MB)"))}");

@@ -50,9 +50,16 @@ public class BlobTags
         set => tags[nameof(Length)] = value.ToString();
     }
 
+    public string Text
+    {
+        get => tags.GetValue<string>(nameof(Text));
+        set => tags[nameof(Text)] = value;
+    }
+
     public void Initialize()
     {
         tags[nameof(Container)] = string.Empty;
+        tags[nameof(Text)] = string.Empty;
         tags[nameof(Status)] = BlobStatus.Pending.ToString();
         tags[nameof(Name)] = string.Empty;
         tags[nameof(BatchId)] = string.Empty;
@@ -94,5 +101,5 @@ public class BlobTags
     }
 
     public override string ToString() =>
-        $"Namespace: {Namespace}, BatchId: {BatchId}, Length: {Length}, Created: {Created}, Modified: {Modified}";
+        $"Status: {Status}, Length: {Length}, Namespace: {Namespace}, BatchId: {BatchId}, Created: {Created}, Modified: {Modified}";
 }
