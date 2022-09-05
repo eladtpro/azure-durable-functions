@@ -22,6 +22,7 @@ public class Orchestrator
         }
 
         //3. Zip Files
+        activity.QueryStatus = BlobStatus.Batched;
         log.LogInformation($"[Orchestrator] Zipping files. ActivityAction {activity}");
         activity = await context.CallActivityAsync<ActivityAction>(nameof(Zipper), activity);
         log.LogInformation($"[Orchestrator] zip file stored successsfuly {activity}");

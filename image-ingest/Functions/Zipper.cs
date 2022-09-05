@@ -16,7 +16,10 @@ public static class Zipper
     {
         log.LogInformation($"[Zipper] ActivityTrigger trigger function Processed blob\n activity:{activity}");
         IDictionary<string, Tuple<BlobClient, BlobTags, Stream>> jobs = new ConcurrentDictionary<string, Tuple<BlobClient, BlobTags, Stream>>();
-        await foreach (BlobTags tags in client.QueryAsync(t => t.Status == activity.QueryStatus && t.Namespace == activity.Namespace))
+        await foreach (BlobTags tags in client.QueryAsync(t => 
+            t.Status == activity.QueryStatus &&
+            t.BatchId == activity.QueryBatchId &&
+            t.Namespace == activity.Namespace))
         {
             BlobClient blobClient = new BlobClient(AzureWebJobsFTPStorage, client.Name, tags.Name);
             //var lease = blobClient.GetBlobLeaseClient();
