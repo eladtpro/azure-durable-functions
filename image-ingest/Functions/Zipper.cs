@@ -32,31 +32,37 @@ public static class Zipper
         string currentKey = string.Empty;
         try
         {
-            using (Package zip = System.IO.Packaging.Package.Open(blob, FileMode.OpenOrCreate))
+            using (MemoryStream zipStream = new MemoryStream())
             {
-                foreach (var item in jobs)
+                using (Package zip = System.IO.Packaging.Package.Open(zipStream, FileMode.OpenOrCreate))
                 {
-                    currentKey = item.Key;
-                    if (null == item.Value.Item3)
+                    foreach (var item in jobs)
                     {
-                        log.LogError($"[Zipper] Cannot compress {item.Key}, Details: {item.Value.Item2}");
-                        continue;
-                    }
-                    string destFilename = ".\\" + Path.GetFileName(item.Key);
-                    Uri uri = PackUriHelper.CreatePartUri(new Uri(destFilename, UriKind.Relative));
-                    if (zip.PartExists(uri)) zip.DeletePart(uri);
+                        currentKey = item.Key;
+                        if (null == item.Value.Item3)
+                        {
+                            log.LogError($"[Zipper] Cannot compress {item.Key}, Missing stream: {item.Value.Item2}");
+                            item.Value.Item2.Status = BlobStatus.Error;
+                            item.Value.Item2.Text = "Cannot compress failed downloading stream";
+                            continue;
+                        }
+                        string destFilename = ".\\" + Path.GetFileName(item.Key);
+                        Uri uri = PackUriHelper.CreatePartUri(new Uri(destFilename, UriKind.Relative));
+                        if (zip.PartExists(uri)) zip.DeletePart(uri);
 
-                    PackagePart part = zip.CreatePart(uri, "", CompressionOption.NotCompressed);
-                    using (Stream dest = part.GetStream())
-                        item.Value.Item3.CopyTo(dest);
+                        PackagePart part = zip.CreatePart(uri, "", CompressionOption.NotCompressed);
+                        using (Stream dest = part.GetStream())
+                            await item.Value.Item3.CopyToAsync(dest);
+                    }
+                    activity.OverrideStatus = BlobStatus.Zipped;
                 }
-                activity.OverrideStatus = BlobStatus.Zipped;
+                await zipStream.CopyToAsync(blob);
             }
         }
         catch (System.Exception ex)
         {
             log.LogError(ex, $"{ex.Message} Details: {activity}");
-            if(jobs.TryGetValue(currentKey, out Tuple<BlobClient, BlobTags, Stream> tuple))
+            if (jobs.TryGetValue(currentKey, out Tuple<BlobClient, BlobTags, Stream> tuple))
                 tuple.Item2.Text = ex.Message;
             activity.OverrideStatus = BlobStatus.Error;
         }
