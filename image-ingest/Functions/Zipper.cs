@@ -28,6 +28,12 @@ public static class Zipper
             jobs[tags.Name] = new Tuple<BlobClient, BlobTags, Stream>(blobClient, tags, null);
         }
 
+        if(jobs.Count < 1)
+        {
+            log.LogWarning($"[Zipper] No blobs found for activity:{activity}");
+            return activity;
+        }
+
         //download file streams
         await Task.WhenAll(jobs.Select(item => item.Value.Item1.DownloadToAsync(item.Value.Item3)));
         log.LogInformation($"[Zipper] Downloaded {jobs.Count} blobs. Files: {string.Join(",", jobs.Select(t => $"{t.Key} ({t.Value.Item2.Length.Bytes2Megabytes()}MB)"))}");
