@@ -51,9 +51,9 @@ public static class Zipper
                         currentJobName = job.Name;
                         if (null == job.Stream)
                         {
-                            log.LogError($"[Zipper] Cannot compress part, no stream created: {job}");
+                            log.LogError($"[Zipper] Package zip Cannot compress part, no stream created: {job}");
                             job.Tags.Status = BlobStatus.Error;
-                            job.Tags.Text = "Cannot compress failed downloading stream";
+                            job.Tags.Text = "Zip failed, No stream downloaded";
                             continue;
                         }
                         string destFilename = ".\\" + Path.GetFileName(job.Name);
@@ -67,7 +67,7 @@ public static class Zipper
                     activity.OverrideStatus = BlobStatus.Zipped;
                 }
                 await zipStream.CopyToAsync(blob);
-                log.LogInformation($"[Zipper] CopyToAsync zip file zipStream: {zipStream.Length}, blob: {blob.Length}");
+                log.LogInformation($"[Zipper] CopyToAsync zip file zipStream: {zipStream.Length}, activity: {activity}");
             }
         }
         catch (System.Exception ex)
