@@ -34,7 +34,7 @@ public class ActivityAction
         //string s = "My. name. is Bond._James Bond!";
         int idx = batchZipFilename.LastIndexOf('-');
 
-        if (idx != -1)
+        if (idx < 0)
             throw new ArgumentException($"batchZipFilename does not contains Namespace, looking for last delimiter '-'", "batchZipFilename");
 
         string batchId = Path.GetFileNameWithoutExtension(batchZipFilename);
