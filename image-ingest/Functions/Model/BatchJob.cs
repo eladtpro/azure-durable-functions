@@ -19,7 +19,7 @@ public class BatchJob
     {
         Tags = tags;
         blobClient = new Lazy<BlobClient>(() => new BlobClient(AzureWebJobsFTPStorage, Tags.Container, Tags.Name));
-        leaseClient = new Lazy<BlobLeaseClient>(() => BlobClient.GetBlobLeaseClient(tags.Name));
+        leaseClient = new Lazy<BlobLeaseClient>(() => BlobClient.GetBlobLeaseClient());
         stream = new Lazy<MemoryStream>(() => new MemoryStream());
     }
 

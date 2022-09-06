@@ -34,9 +34,11 @@ public static class Zipper
             return activity;
         }
 
-        //TODO: use lease to prevent multiple zips
-        // await Task.WhenAll(jobs.Select(job => job.LeaseClient.AcquireAsync(LeaseDuration)));
-        await Task.WhenAll(jobs.Select(job => job.BlobClient.DownloadToAsync(job.Stream)));
+        //download file streams
+        await Task.WhenAll(jobs.Select(job => job.LeaseClient
+            .AcquireAsync(LeaseDuration)
+            .ContinueWith(j => job.Lease = j.Result)
+            .ContinueWith(j => job.BlobClient.DownloadToAsync(job.Stream))));
 
         log.LogInformation($"[Zipper] Downloaded {jobs.Count} blobs. Files: {string.Join(",", jobs.Select(j => $"{j.Name} ({j.Tags.Length.Bytes2Megabytes()}MB)"))}");
         string currentJobName = string.Empty;
@@ -82,9 +84,9 @@ public static class Zipper
         }
 
         log.LogInformation($"[Zipper] Zip file completed, post creation marking blobs for deletion. Activity: {activity}");
-        await Task.WhenAll(jobs.Select(job => job.BlobClient.WriteTagsAsync(job.Tags, t => t.Status = activity.OverrideStatus)
-            // .ContinueWith(t => job.LeaseClient.ReleaseAsync())
-            ));
+        await Task.WhenAll(jobs.Select(job => job.BlobClient
+            .WriteTagsAsync(job.Tags, t => t.Status = activity.OverrideStatus)
+            .ContinueWith(t => job.LeaseClient.ReleaseAsync())));
         log.LogInformation($"[Zipper] Tags marked {jobs.Count} blobs. Status: {activity.OverrideStatus}, OverrideBatchId: {activity.OverrideBatchId}. Files: {string.Join(",", jobs.Select(t => $"{t.Name} ({t.Tags.Length.Bytes2Megabytes()}MB)"))}");
         return activity;
     }
