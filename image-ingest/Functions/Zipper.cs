@@ -36,7 +36,12 @@ public static class Zipper
         await Task.WhenAll(jobs.Select(job => job.LeaseClient
             .AcquireAsync(LeaseDuration)
             .ContinueWith(j => job.Lease = j.Result)
-            .ContinueWith(j => job.BlobClient.DownloadToAsync(job.Stream, new BlobDownloadToOptions { Conditions = new BlobRequestConditions { LeaseId = job.Lease.LeaseId } }))));
+            .ContinueWith(j =>
+            {
+                job.BlobClient
+                    .DownloadToAsync(job.Stream, new BlobDownloadToOptions { Conditions = new BlobRequestConditions { LeaseId = job.Lease.LeaseId } })
+                    .ContinueWith(r => log.LogInformation($"[Zipper] Downloaded {job.BlobClient.Name}, length: {job.Stream.Length}, Success: {r.IsCompletedSuccessfully}, Exception: {r.Exception?.Message}"));
+            })));
 
         log.LogInformation($"[Zipper] Downloaded {jobs.Count} blobs. Files: {string.Join(",", jobs.Select(j => $"{j.Name} ({j.Tags.Length.Bytes2Megabytes()}MB)"))}");
         string currentJobName = string.Empty;
