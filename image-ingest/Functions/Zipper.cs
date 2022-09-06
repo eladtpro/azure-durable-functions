@@ -62,7 +62,10 @@ public static class Zipper
 
                         PackagePart part = zip.CreatePart(uri, "", CompressionOption.NotCompressed);
                         using (Stream dest = part.GetStream())
+                        {
                             job.Stream.CopyTo(dest);
+                            dest.Flush();
+                        }
                     }
                     activity.OverrideStatus = BlobStatus.Zipped;
                 }
