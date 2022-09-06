@@ -27,7 +27,7 @@ public class Collector
         activity.OverrideBatchId = ActivityAction.EnlistBatchId(activity.Namespace);
         activity.OverrideStatus = BlobStatus.Batched;
         await Task.WhenAll(tags.Select(tag =>
-            new BlobClient(AzureWebJobsFTPStorage, tag.Container, tag.Name).WriteTagsAsync(tag, t =>
+            new BlobClient(AzureWebJobsFTPStorage, tag.Container, tag.Name).WriteTagsAsync(tag, null, t =>
             {
                 t.Status = activity.OverrideStatus;
                 t.BatchId = activity.OverrideBatchId;
