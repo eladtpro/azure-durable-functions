@@ -38,7 +38,7 @@ public static class Zipper
             .ContinueWith(r => log.LogInformation($"[Zipper] Downloaded {job.BlobClient.Name}, length: {job.Stream.Length}, Success: {r.IsCompletedSuccessfully}, Exception: {r.Exception?.Message}"))
         ));
 
-        log.LogInformation($"[Zipper] Downloaded {jobs.Count} blobs. Files: {string.Join(",", jobs.Select(j => $"{j.Name} ({j.Tags.Length.Bytes2Megabytes()}MB)"))}");
+        log.LogInformation($"[Zipper] Downloaded {jobs.Count} blobs. Files: {string.Join(",", jobs.Select(j => $"{j.Name} ({j.Stream.Length})"))}");
         string currentJobName = string.Empty;
         try
         {
