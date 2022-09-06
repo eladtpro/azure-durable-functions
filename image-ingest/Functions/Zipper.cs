@@ -35,7 +35,7 @@ public static class Zipper
         //download file streams
         await Task.WhenAll(jobs.Select(job => job.LeaseClient.AcquireAsync(LeaseDuration).ContinueWith(j => job.Lease = j.Result, TaskContinuationOptions.ExecuteSynchronously)));
         await Task.WhenAll(jobs.Select(job => job.BlobClient.DownloadToAsync(job.Stream, new BlobDownloadToOptions { Conditions = new BlobRequestConditions { LeaseId = job.Lease.LeaseId } })
-            .ContinueWith(r => log.LogInformation($"[Zipper] Downloaded {job.BlobClient.Name}, length: {job.Stream.Length}, Success: {r.IsCompletedSuccessfully}, Exception: {r.Exception?.Message}"))
+            .ContinueWith(r => log.LogInformation($"[Zipper] DownloadToAsync {job.BlobClient.Name}, length: {job.Stream.Length}, Success: {r.IsCompletedSuccessfully}, Exception: {r.Exception?.Message}"))
         ));
 
         log.LogInformation($"[Zipper] Downloaded {jobs.Count} blobs. Files: {string.Join(",", jobs.Select(j => $"{j.Name} ({j.Stream.Length})"))}");
@@ -62,11 +62,12 @@ public static class Zipper
 
                         PackagePart part = zip.CreatePart(uri, "", CompressionOption.NotCompressed);
                         using (Stream dest = part.GetStream())
-                            await job.Stream.CopyToAsync(dest);
+                            job.Stream.CopyTo(dest);
                     }
                     activity.OverrideStatus = BlobStatus.Zipped;
                 }
                 await zipStream.CopyToAsync(blob);
+                log.LogInformation($"[Zipper] CopyToAsync zip file zipStream: {zipStream.Length}, blob: {blob.Length}");
             }
         }
         catch (System.Exception ex)
