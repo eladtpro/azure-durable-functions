@@ -42,15 +42,15 @@ public static class BlobClientExtensions
         yield return new BlobTags();
     }
 
-    public static async Task<Response> WriteTagsAsync(this BlobClient blobClient, BlobTags tags)
+    public static async Task<Response> WriteTagsAsync(this BlobClient blobClient, BlobTags tags, string leaseId)
     {
         tags.Modified = DateTime.Now.ToFileTimeUtc();
-        return await blobClient.SetTagsAsync(tags.Tags);
+        return await blobClient.SetTagsAsync(tags.Tags, new BlobRequestConditions { LeaseId = leaseId });
     }
 
-    public static async Task<Response> WriteTagsAsync(this BlobClient blobClient, BlobTags tags, Action<BlobTags> update)
+    public static async Task<Response> WriteTagsAsync(this BlobClient blobClient, BlobTags tags, string leaseId, Action<BlobTags> update)
     {
         update(tags);
-        return await BlobClientExtensions.WriteTagsAsync(blobClient, tags);
+        return await BlobClientExtensions.WriteTagsAsync(blobClient, tags, leaseId);
     }
 }

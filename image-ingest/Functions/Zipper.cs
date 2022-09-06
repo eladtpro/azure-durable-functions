@@ -1,6 +1,4 @@
-﻿using System.Collections.Concurrent;
-using System.Collections.Generic;
-using System.IO.Packaging;
+﻿using System.IO.Packaging;
 
 namespace ImageIngest.Functions;
 public static class Zipper
@@ -38,7 +36,7 @@ public static class Zipper
         await Task.WhenAll(jobs.Select(job => job.LeaseClient
             .AcquireAsync(LeaseDuration)
             .ContinueWith(j => job.Lease = j.Result)
-            .ContinueWith(j => job.BlobClient.DownloadToAsync(job.Stream))));
+            .ContinueWith(j => job.BlobClient.DownloadToAsync(job.Stream, new BlobDownloadToOptions { Conditions = new BlobRequestConditions { LeaseId = job.Lease.LeaseId } }))));
 
         log.LogInformation($"[Zipper] Downloaded {jobs.Count} blobs. Files: {string.Join(",", jobs.Select(j => $"{j.Name} ({j.Tags.Length.Bytes2Megabytes()}MB)"))}");
         string currentJobName = string.Empty;
@@ -46,7 +44,7 @@ public static class Zipper
         {
             using (MemoryStream zipStream = new MemoryStream())
             {
-                using (Package zip = System.IO.Packaging.Package.Open(zipStream, FileMode.OpenOrCreate))
+                using (Package zip = Package.Open(zipStream, FileMode.OpenOrCreate))
                 {
                     foreach (var job in jobs)
                     {
@@ -76,7 +74,7 @@ public static class Zipper
             log.LogError(ex, $"{ex.Message} Details: {activity}");
             activity.OverrideStatus = BlobStatus.Error;
             var job = jobs.FirstOrDefault(j => j.Name == currentJobName);
-            if(null != job)
+            if (null != job)
             {
                 job.Tags.Status = BlobStatus.Error;
                 job.Tags.Text = ex.Message;
@@ -85,7 +83,7 @@ public static class Zipper
 
         log.LogInformation($"[Zipper] Zip file completed, post creation marking blobs for deletion. Activity: {activity}");
         await Task.WhenAll(jobs.Select(job => job.BlobClient
-            .WriteTagsAsync(job.Tags, t => t.Status = activity.OverrideStatus)
+            .WriteTagsAsync(job.Tags, job.Lease.LeaseId, t => t.Status = activity.OverrideStatus)
             .ContinueWith(t => job.LeaseClient.ReleaseAsync())));
         log.LogInformation($"[Zipper] Tags marked {jobs.Count} blobs. Status: {activity.OverrideStatus}, OverrideBatchId: {activity.OverrideBatchId}. Files: {string.Join(",", jobs.Select(t => $"{t.Name} ({t.Tags.Length.Bytes2Megabytes()}MB)"))}");
         return activity;
