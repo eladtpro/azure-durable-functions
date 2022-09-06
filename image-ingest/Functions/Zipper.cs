@@ -1,11 +1,12 @@
 ﻿using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.IO.Packaging;
 
 namespace ImageIngest.Functions;
 public static class Zipper
 {
-    private static string AzureWebJobsFTPStorage =>
-        System.Environment.GetEnvironmentVariable("AzureWebJobsFTPStorage");
+    private static string AzureWebJobsFTPStorage => Environment.GetEnvironmentVariable("AzureWebJobsFTPStorage");
+    private static TimeSpan LeaseDuration => TimeSpan.Parse(Environment.GetEnvironmentVariable("LeaseDuration"));
 
     [FunctionName(nameof(Zipper))]
     public static async Task<ActivityAction> Run(
@@ -17,50 +18,51 @@ public static class Zipper
         log.LogInformation($"[Zipper] ActivityTrigger trigger function Processed blob\n activity:{activity}");
         activity.QueryBatchId = activity.OverrideBatchId;
         log.LogInformation($"[Zipper] QueryAsync activity:{activity}");
-        IDictionary<string, Tuple<BlobClient, BlobTags, Stream>> jobs = new ConcurrentDictionary<string, Tuple<BlobClient, BlobTags, Stream>>();
+        List<BatchJob> jobs = new List<BatchJob>();
         await foreach (BlobTags tags in client.QueryAsync(t =>
             t.Status == activity.QueryStatus &&
             t.BatchId == activity.QueryBatchId &&
             t.Namespace == activity.Namespace))
         {
-            BlobClient blobClient = new BlobClient(AzureWebJobsFTPStorage, client.Name, tags.Name);
-            //var lease = blobClient.GetBlobLeaseClient();
-            jobs[tags.Name] = new Tuple<BlobClient, BlobTags, Stream>(blobClient, tags, null);
+            BatchJob job = new BatchJob(tags);
+            jobs.Add(job);
         }
 
-        if(jobs.Count < 1)
+        if (jobs.Count < 1)
         {
             log.LogWarning($"[Zipper] No blobs found for activity:{activity}");
             return activity;
         }
 
         //download file streams
-        await Task.WhenAll(jobs.Select(item => item.Value.Item1.DownloadToAsync(item.Value.Item3)));
-        log.LogInformation($"[Zipper] Downloaded {jobs.Count} blobs. Files: {string.Join(",", jobs.Select(t => $"{t.Key} ({t.Value.Item2.Length.Bytes2Megabytes()}MB)"))}");
-        string currentKey = string.Empty;
+        await Task.WhenAll(jobs.Select(job => job.LeaseClient.AcquireAsync(LeaseDuration)));
+        await Task.WhenAll(jobs.Select(job => job.BlobClient.DownloadToAsync(job.Stream)));
+
+        log.LogInformation($"[Zipper] Downloaded {jobs.Count} blobs. Files: {string.Join(",", jobs.Select(j => $"{j.Name} ({j.Tags.Length.Bytes2Megabytes()}MB)"))}");
+        string currentJobName = string.Empty;
         try
         {
             using (MemoryStream zipStream = new MemoryStream())
             {
                 using (Package zip = System.IO.Packaging.Package.Open(zipStream, FileMode.OpenOrCreate))
                 {
-                    foreach (var item in jobs)
+                    foreach (var job in jobs)
                     {
-                        currentKey = item.Key;
-                        if (null == item.Value.Item3)
+                        currentJobName = job.Name;
+                        if (null == job.Stream)
                         {
-                            log.LogError($"[Zipper] Cannot compress {item.Key}, Missing stream: {item.Value.Item2}");
-                            item.Value.Item2.Status = BlobStatus.Error;
-                            item.Value.Item2.Text = "Cannot compress failed downloading stream";
+                            log.LogError($"[Zipper] Cannot compress part, no stream created: {job}");
+                            job.Tags.Status = BlobStatus.Error;
+                            job.Tags.Text = "Cannot compress failed downloading stream";
                             continue;
                         }
-                        string destFilename = ".\\" + Path.GetFileName(item.Key);
+                        string destFilename = ".\\" + Path.GetFileName(job.Name);
                         Uri uri = PackUriHelper.CreatePartUri(new Uri(destFilename, UriKind.Relative));
                         if (zip.PartExists(uri)) zip.DeletePart(uri);
 
                         PackagePart part = zip.CreatePart(uri, "", CompressionOption.NotCompressed);
                         using (Stream dest = part.GetStream())
-                            await item.Value.Item3.CopyToAsync(dest);
+                            await job.Stream.CopyToAsync(dest);
                     }
                     activity.OverrideStatus = BlobStatus.Zipped;
                 }
@@ -70,14 +72,18 @@ public static class Zipper
         catch (System.Exception ex)
         {
             log.LogError(ex, $"{ex.Message} Details: {activity}");
-            if (jobs.TryGetValue(currentKey, out Tuple<BlobClient, BlobTags, Stream> tuple))
-                tuple.Item2.Text = ex.Message;
             activity.OverrideStatus = BlobStatus.Error;
+            var job = jobs.FirstOrDefault(j => j.Name == currentJobName);
+            if(null != job)
+            {
+                job.Tags.Status = BlobStatus.Error;
+                job.Tags.Text = ex.Message;
+            }
         }
 
         log.LogInformation($"[Zipper] Zip file completed, post creation marking blobs for deletion. Activity: {activity}");
-        await Task.WhenAll(jobs.Select(job => job.Value.Item1.WriteTagsAsync(job.Value.Item2, t => t.Status = activity.OverrideStatus)));
-        log.LogInformation($"[Zipper] Tags marked {jobs.Count} blobs. Status: {activity.OverrideStatus}, OverrideBatchId: {activity.OverrideBatchId}. Files: {string.Join(",", jobs.Select(t => $"{t.Key} ({t.Value.Item2.Length.Bytes2Megabytes()}MB)"))}");
+        await Task.WhenAll(jobs.Select(job => job.BlobClient.WriteTagsAsync(job.Tags, t => t.Status = activity.OverrideStatus).ContinueWith(t => job.LeaseClient.ReleaseAsync())));
+        log.LogInformation($"[Zipper] Tags marked {jobs.Count} blobs. Status: {activity.OverrideStatus}, OverrideBatchId: {activity.OverrideBatchId}. Files: {string.Join(",", jobs.Select(t => $"{t.Name} ({t.Tags.Length.Bytes2Megabytes()}MB)"))}");
         return activity;
     }
 }
