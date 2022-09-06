@@ -63,7 +63,7 @@ public static class Zipper
                         PackagePart part = zip.CreatePart(uri, "", CompressionOption.NotCompressed);
                         using (Stream dest = part.GetStream())
                             {
-                                job.Stream.Seek(0, SeekOrigin.Begin);
+                                job.Stream.Position = 0;
                                 job.Stream.CopyTo(dest);
                             }
                     }
