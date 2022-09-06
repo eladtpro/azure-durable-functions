@@ -1,4 +1,5 @@
 ﻿using System.IO.Packaging;
+using System.Net.Mime;
 
 namespace ImageIngest.Functions;
 public static class Zipper
@@ -44,7 +45,7 @@ public static class Zipper
         {
             using (MemoryStream zipStream = new MemoryStream())
             {
-                using (Package zip = Package.Open(zipStream, FileMode.OpenOrCreate))
+                using (Package zip = Package.Open(zipStream, FileMode.CreateNew))
                 {
                     foreach (var job in jobs)
                     {
@@ -56,13 +57,15 @@ public static class Zipper
                             job.Tags.Text = "Zip failed, No stream downloaded";
                             continue;
                         }
-                        string destFilename = ".\\" + Path.GetFileName(job.Name);
-                        Uri uri = PackUriHelper.CreatePartUri(new Uri(destFilename, UriKind.Relative));
-                        if (zip.PartExists(uri)) zip.DeletePart(uri);
 
+                        string destFilename = "/" + Path.GetFileName(job.Name);
+                        Uri uri = PackUriHelper.CreatePartUri(new Uri(destFilename, UriKind.Relative));
                         PackagePart part = zip.CreatePart(uri, "", CompressionOption.NotCompressed);
                         using (Stream dest = part.GetStream())
-                            job.Stream.CopyTo(dest);
+                            {
+                                job.Stream.Seek(0, SeekOrigin.Begin);
+                                job.Stream.CopyTo(dest);
+                            }
                     }
                     activity.OverrideStatus = BlobStatus.Zipped;
                 }
