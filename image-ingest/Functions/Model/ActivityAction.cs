@@ -57,6 +57,6 @@ public class ActivityAction
 
     public override string ToString()
     {
-        return $"{Total}, CurrentBatchId: {QueryBatchId}, OverrideBatchId: {OverrideBatchId}, CurrentStatus: {QueryStatus}, OverrideStatus: {OverrideStatus}, Namespace: {Namespace}";
+        return $"Total: {Total}, QueryBatchId: {QueryBatchId}, OverrideBatchId: {OverrideBatchId}, QueryStatus: {QueryStatus}, OverrideStatus: {OverrideStatus}, Namespace: {Namespace}";
     }
 }

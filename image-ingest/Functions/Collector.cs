@@ -33,8 +33,7 @@ public class Collector
                 t.BatchId = activity.OverrideBatchId;
             })
         ));
-        activity.QueryBatchId = activity.OverrideBatchId;
-        log.LogInformation($"[Collector] Tags marked {tags.Count} blobs. Status: {activity.OverrideStatus}, OverrideBatchId: {activity.OverrideBatchId}. Files: {string.Join(",", tags.Select(t => $"{t.Name} ({t.Length.Bytes2Megabytes()}MB)"))}");
+        log.LogInformation($"[Collector] Tags marked {tags.Count} blobs.\nSActivity: {activity}.\nFiles: {string.Join(",", tags.Select(t => $"{t.Name} ({t.Length.Bytes2Megabytes()}MB)"))}");
 
         return activity;
     }

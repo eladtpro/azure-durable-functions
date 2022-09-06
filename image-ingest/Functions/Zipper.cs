@@ -15,6 +15,8 @@ public static class Zipper
         ILogger log)
     {
         log.LogInformation($"[Zipper] ActivityTrigger trigger function Processed blob\n activity:{activity}");
+        activity.QueryBatchId = activity.OverrideBatchId;
+        log.LogInformation($"[Zipper] QueryAsync activity:{activity}");
         IDictionary<string, Tuple<BlobClient, BlobTags, Stream>> jobs = new ConcurrentDictionary<string, Tuple<BlobClient, BlobTags, Stream>>();
         await foreach (BlobTags tags in client.QueryAsync(t =>
             t.Status == activity.QueryStatus &&
