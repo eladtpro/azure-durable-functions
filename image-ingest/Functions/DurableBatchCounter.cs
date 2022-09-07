@@ -2,6 +2,7 @@ using Newtonsoft.Json;
 
 namespace ImageIngest.Functions;
 
+//TODO: Ps state dictionary
 [JsonObject(MemberSerialization.OptIn)]
 public class DurableBatchCounter : IDurableBatchCounter
 {
