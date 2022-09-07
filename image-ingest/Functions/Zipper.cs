@@ -1,5 +1,4 @@
 ﻿using System.IO.Packaging;
-using System.Net.Mime;
 
 namespace ImageIngest.Functions;
 public static class Zipper
