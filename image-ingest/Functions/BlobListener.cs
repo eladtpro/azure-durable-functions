@@ -5,6 +5,8 @@ namespace ImageIngest.Functions;
 
 public class BlobListener
 {
+    public static string EventGridSubjectPrefix { get; set; } = System.Environment.GetEnvironmentVariable("EventGridSubjectPrefix");
+
     [FunctionName(nameof(BlobListener))]
     public async Task Run(
         // [BlobTrigger("images/{name}", Source = BlobTriggerSource.EventGrid, Connection = "AzureWebJobsFTPStorage")] BlobClient blobClient,
@@ -13,8 +15,8 @@ public class BlobListener
         [DurableClient] IDurableOrchestrationClient starter,
         ILogger log)
     {
-        log.LogInformation($"[BlobListener] Function triggered on EventGrid topic subscription. Subject: {blobEvent.Subject}, Details: {blobEvent}");
-        string blobName = blobEvent.Subject.Replace("/blobServices/default/containers/images/", string.Empty, StringComparison.InvariantCultureIgnoreCase);
+        log.LogInformation($"[BlobListener] Function triggered on EventGrid topic subscription. Subject: {blobEvent.Subject}, Prefix: {EventGridSubjectPrefix} Details: {blobEvent}");
+        string blobName = blobEvent.Subject.Replace(EventGridSubjectPrefix, string.Empty, StringComparison.InvariantCultureIgnoreCase);
         log.LogInformation($"[BlobListener] extacted blob name: {blobName}");
         BlobClient blobClient = blobContainerClient.GetBlobClient(blobName);
         log.LogInformation($"[BlobListener] BlobClient Blob: {blobClient.Name}, Container: {blobClient.BlobContainerName}, AccountName: {blobClient.AccountName}");
