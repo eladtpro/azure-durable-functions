@@ -68,8 +68,10 @@ public static class Zipper
                     }
                     activity.OverrideStatus = BlobStatus.Zipped;
                 }
-                zipStream.CopyTo(blob);
-
+                // zipStream.CopyTo(blob);
+                // blob.CopyTo(ms);
+                byte[] byteArray = zipStream.ToArray();
+                await blob.WriteAsync(byteArray, 0, byteArray.Length);
                 log.LogInformation($"[Zipper] CopyToAsync zip file zipStream: {zipStream.Length}, activity: {activity}");
             }
         }
