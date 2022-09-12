@@ -13,10 +13,13 @@ public class BlobListener
         [DurableClient] IDurableOrchestrationClient starter,
         ILogger log)
     {
-        string blobName = blobEvent.Subject.Replace("/blobServices/default/containers/", string.Empty, StringComparison.InvariantCultureIgnoreCase);
+        log.LogInformation($"[BlobListener] Function triggered on EventGrid topic subscription. Subject: {blobEvent.Subject}, Details: {blobEvent}");
+        string blobName = blobEvent.Subject.Replace("/blobServices/default/containers/images/", string.Empty, StringComparison.InvariantCultureIgnoreCase);
+        log.LogInformation($"[BlobListener] extacted blob name: {blobName}");
         BlobClient blobClient = blobContainerClient.GetBlobClient(blobName);
-        log.LogInformation($"[BlobListener] Function triggered on blob {blobName}");
+        log.LogInformation($"[BlobListener] BlobClient Blob: {blobClient.Name}, Container: {blobClient.BlobContainerName}, AccountName: {blobClient.AccountName}");
         BlobProperties props = await blobClient.GetPropertiesAsync();
+        log.LogInformation($"[BlobListener] BlobProperties: {props}");
         BlobTags tags = new BlobTags(props, blobClient);
         ActivityAction activity = new ActivityAction(tags);
         Response response = await blobClient.WriteTagsAsync(tags);
