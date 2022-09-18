@@ -265,3 +265,4 @@ __pycache__/
 
 **/net*/
 .DS_Store
+**/.DS_Store
