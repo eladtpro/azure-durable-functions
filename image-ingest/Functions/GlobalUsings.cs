@@ -20,3 +20,6 @@ global using ImageIngest.Functions.Extensions;
 global using ImageIngest.Functions.Enums;
 global using ImageIngest.Functions.Model;
 
+global using Newtonsoft.Json;
+
+

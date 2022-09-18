@@ -9,8 +9,8 @@ class Program
 {
     static async Task Main(string[] args)
     {
-        //IConfiguration config = new ConfigurationBuilder()
-        //      .AddJsonFile("appsettings.json", true, true)
+        // IConfiguration config = new ConfigurationBuilder()
+        //      .AddJsonFile("local.settings.json", true, true)
         //      .Build();
 
         await FindCustomerFiles();

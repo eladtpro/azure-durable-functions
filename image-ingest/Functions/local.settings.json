@@ -1,0 +1,17 @@
+{
+    "IsEncrypted": false,
+    "Values": {
+        "AzureWebJobsStorage": "UseDevelopmentStorage=true",
+        "AzureWebJobsFTPStorage": "UseDevelopmentStorage=true",
+        "AzureWebJobsZipStorage":"UseDevelopmentStorage=true",
+        "FUNCTIONS_WORKER_RUNTIME": "dotnet",
+        "FUNCTIONS_EXTENSION_VERSION": "~4",
+        "FUNCTIONS_WORKER_PROCESS_COUNT": "2",
+        "ZipBatchSizeMB": 10,
+        "ScavengerPageSize": 20,
+        "ScavengerOutdatedThreshold":"05:00",
+        "LeaseDuration": "00:00:30",
+        "EventGridSubjectPrefix": "/blobServices/default/containers/images/blobs/",
+        "SasDuration": "00:02:00"
+    }
+}

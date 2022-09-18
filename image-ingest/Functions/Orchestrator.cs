@@ -7,14 +7,17 @@ public class Orchestrator
         [OrchestrationTrigger] IDurableOrchestrationContext context,
         ILogger log)
     {
-        //1. Check for ready batch files    ++++++++++++++++++++++++++++++++++++++
         log.LogInformation($"[Orchestrator] OrchestrationTrigger triggered Function from [BlobListener] for InstanceId {context.InstanceId}");
         ActivityAction activity = context.GetInput<ActivityAction>();
         activity.QueryStatus = BlobStatus.Pending;
-        log.LogInformation($"[Orchestrator] ActivityAction {activity}");
-        activity = await context.CallActivityAsync<ActivityAction>(nameof(Collector), activity);
 
-        //Check if batch created
+        //1. Get storage sas token    ++++++++++++++++++++++++++++++++++++++
+        activity = await context.CallActivityAsync<ActivityAction>(nameof(Tokenizer), activity);
+        log.LogInformation($"[Orchestrator] ActivityAction with token {activity}");
+
+        //2. Check for ready batch files    ++++++++++++++++++++++++++++++++++++++
+        activity = await context.CallActivityAsync<ActivityAction>(nameof(Collector), activity);
+        //2.5 Check if batch created
         if (string.IsNullOrWhiteSpace(activity.OverrideBatchId))
         {
             log.LogInformation($"[Orchestrator] No batch created. ActivityAction {activity}");

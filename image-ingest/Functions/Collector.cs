@@ -9,12 +9,12 @@ public class Collector
     [FunctionName(nameof(Collector))]
     public static async Task<ActivityAction> Run(
         [ActivityTrigger] ActivityAction activity,
-        [Blob("images", Connection = "AzureWebJobsFTPStorage")] BlobContainerClient blobContainerClient,
+        [Blob("images", Connection = "AzureWebJobsFTPStorage")] BlobContainerClient containerClient,
         ILogger log)
     {
         log.LogInformation($"[Collector] ActivityTrigger triggered Function activity:{activity}");
         List<BlobTags> tags = new List<BlobTags>();
-        await foreach (BlobTags tag in blobContainerClient.QueryAsync(t => t.Status == activity.QueryStatus && t.Namespace == activity.Namespace))
+        await foreach (BlobTags tag in containerClient.QueryAsync(t => t.Status == activity.QueryStatus && t.Namespace == activity.Namespace))
         {
             activity.Total += tag.Length;
             tags.Add(tag);

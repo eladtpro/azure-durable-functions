@@ -1,0 +1,9 @@
+{
+    "IsEncrypted": false,
+    "Values": {
+        "AzureWebJobsStorage": "UseDevelopmentStorage=true",
+        "AzureWebJobsFTPStorage": "UseDevelopmentStorage=true",
+        "AzureWebJobsZipStorage":"UseDevelopmentStorage=true",
+        "ZipBatchSizeMB": 10
+    }
+}

@@ -19,14 +19,12 @@ public class ActivityAction
     public string OverrideBatchId { get; set; }
     public BlobStatus QueryStatus { get; set; }
     public BlobStatus OverrideStatus { get; set; }
+    public SasToken Token { get; set; }
 
     //activity.OverrideBatchId = $"{activity.Namespace}-{DateTime.UtcNow.ToString("yyyyMMddHHmmssfff")}";
     public static string EnlistBatchId(string @namespace)
     {
         return $"{@namespace}-{DateTime.UtcNow.ToString("yyyyMMddHHmmssfff")}";
-        //TODO: use durable entity
-        // EntityId entityId = new EntityId(nameof(DurableBatchCounter), activity.Namespace);
-        // var batchCounter = await context.CallEntityAsync<IDurableBatchCounter>(entityId, nameof(IDurableBatchCounter.Enlist));
     }
 
     public static ActivityAction ExtractBatchIdAndNamespace(string batchZipFilename)
@@ -46,8 +44,6 @@ public class ActivityAction
 
         return activity;
     }
-
-
 
     public string QueryStatusAndNamespace =>
         $@"""Status""='{QueryStatus.ToString()}' AND ""Namespace""= '{Namespace}'";
