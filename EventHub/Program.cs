@@ -20,7 +20,10 @@ class Program
 
     public static async Task<List<TaggedBlobItem>> FindCustomerFiles(string containerName = "images")
     {
-        string connectionString = Environment.GetEnvironmentVariable("AzureWebJobsFTPStorage");
+        string connectionString = Environment.GetEnvironmentVariable("AzureWebJobsFTPStorage") ?? string.Empty;
+        if(string.IsNullOrWhiteSpace(connectionString))
+            throw new InvalidProgramException("Missing AzureWebJobsFTPStorage connection string");
+
         BlobContainerClient blobContainerClient = new BlobContainerClient(connectionString, containerName);
 
         await foreach (BlobItem item in blobContainerClient.GetBlobsAsync(BlobTraits.All, BlobStates.None, "images/"))
