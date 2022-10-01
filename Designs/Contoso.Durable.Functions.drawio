@@ -1,4 +1,4 @@
-<mxfile host="app.diagrams.net" modified="2022-10-01T14:45:37.547Z" agent="5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/104.0.5112.102 Safari/537.36 Edg/104.0.1293.63" etag="WCOSgIf9RG4qbGse9AC_" version="20.4.0" type="github">
+<mxfile host="app.diagrams.net" modified="2022-10-01T14:47:22.889Z" agent="5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/104.0.5112.102 Safari/537.36 Edg/104.0.1293.63" etag="DjjB7NOsP-2Wq3VGuI1L" version="20.4.0" type="github">
   <diagram id="mp0UFyH3FqtpCRN3-6L2" name="Page-1">
     <mxGraphModel dx="1186" dy="708" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
       <root>
@@ -224,8 +224,8 @@
         <mxCell id="93GdrIorIVijSSyAPYrD-17" value="7" style="ellipse;whiteSpace=wrap;html=1;aspect=fixed;strokeWidth=2;fontFamily=Tahoma;spacingBottom=4;spacingRight=2;strokeColor=#d3d3d3;" vertex="1" parent="zGb-HXnJVVAAqv_T0aW1-69">
           <mxGeometry x="857.0000000000001" y="84" width="20" height="20" as="geometry" />
         </mxCell>
-        <mxCell id="EbMunbrASVV2r2uE1-7z-11" value="&lt;h1&gt;Image Ingest&lt;/h1&gt;&lt;p&gt;target: support 4000 image/min&lt;/p&gt;" style="text;html=1;strokeColor=none;fillColor=none;spacing=5;spacingTop=-20;whiteSpace=wrap;overflow=hidden;rounded=0;" parent="1" vertex="1">
-          <mxGeometry x="10" y="29" width="211" height="92" as="geometry" />
+        <mxCell id="EbMunbrASVV2r2uE1-7z-11" value="&lt;h1&gt;&lt;span style=&quot;background-color: initial; font-size: 24px;&quot;&gt;Azure Durable Functions workflow&lt;/span&gt;&lt;br&gt;&lt;/h1&gt;" style="text;html=1;strokeColor=none;fillColor=none;spacing=5;spacingTop=-20;whiteSpace=wrap;overflow=hidden;rounded=0;" parent="1" vertex="1">
+          <mxGeometry x="10" y="29" width="310" height="92" as="geometry" />
         </mxCell>
         <mxCell id="zGb-HXnJVVAAqv_T0aW1-130" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=none;endFill=0;fillColor=#e1d5e7;strokeColor=#9673a6;dashed=1;" parent="1" source="EbMunbrASVV2r2uE1-7z-14" target="zGb-HXnJVVAAqv_T0aW1-39" edge="1">
           <mxGeometry relative="1" as="geometry" />
