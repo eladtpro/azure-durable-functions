@@ -1,4 +1,4 @@
-<mxfile host="app.diagrams.net" modified="2022-10-01T14:30:10.428Z" agent="5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/104.0.5112.102 Safari/537.36 Edg/104.0.1293.63" etag="T8o4RVVtQWJ49CuF5WzQ" version="20.4.0" type="github">
+<mxfile host="app.diagrams.net" modified="2022-10-01T14:32:55.165Z" agent="5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/104.0.5112.102 Safari/537.36 Edg/104.0.1293.63" etag="oXGE5o3tqiTYzgjTjXHP" version="20.4.0" type="github">
   <diagram id="mp0UFyH3FqtpCRN3-6L2" name="Page-1">
     <mxGraphModel dx="1186" dy="708" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
       <root>
@@ -19,13 +19,13 @@
         <mxCell id="EbMunbrASVV2r2uE1-7z-3" value="stimagesftp&lt;br&gt;(Image Storage)" style="aspect=fixed;html=1;points=[];align=center;image;fontSize=12;image=img/lib/azure2/storage/Storage_Accounts.svg;" parent="zGb-HXnJVVAAqv_T0aW1-69" vertex="1">
           <mxGeometry x="82" y="93" width="65" height="52" as="geometry" />
         </mxCell>
-        <mxCell id="zGb-HXnJVVAAqv_T0aW1-122" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=none;endFill=0;fillColor=#dae8fc;strokeColor=#6c8ebf;dashed=1;dashPattern=1 1;startArrow=none;" parent="zGb-HXnJVVAAqv_T0aW1-69" source="EbMunbrASVV2r2uE1-7z-3" target="Y3fSY0z_PWKwTvdtHTbV-13" edge="1">
+        <mxCell id="zGb-HXnJVVAAqv_T0aW1-122" value="Image Stream" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=none;endFill=0;fillColor=#dae8fc;strokeColor=#6c8ebf;dashed=1;dashPattern=1 1;startArrow=none;" parent="zGb-HXnJVVAAqv_T0aW1-69" source="EbMunbrASVV2r2uE1-7z-3" target="Y3fSY0z_PWKwTvdtHTbV-13" edge="1">
           <mxGeometry relative="1" as="geometry">
             <Array as="points">
               <mxPoint x="191" y="119" />
               <mxPoint x="191" y="178" />
               <mxPoint x="211" y="178" />
-              <mxPoint x="211" y="339" />
+              <mxPoint x="211" y="354" />
             </Array>
             <mxPoint x="291.6233299999999" y="255.45800000000008" as="targetPoint" />
           </mxGeometry>
@@ -120,7 +120,7 @@
         <mxCell id="RCE_GgjakJLuHdIpDTJi-3" value="1. Collector&lt;br&gt;(ActivityTrigger)" style="aspect=fixed;html=1;points=[];align=center;image;fontSize=12;image=img/lib/azure2/compute/Function_Apps.svg;" parent="zGb-HXnJVVAAqv_T0aW1-69" vertex="1">
           <mxGeometry x="505" y="419" width="68" height="60" as="geometry" />
         </mxCell>
-        <mxCell id="RCE_GgjakJLuHdIpDTJi-6" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0.491;entryY=-0.05;entryDx=0;entryDy=0;entryPerimeter=0;endArrow=classic;endFill=1;fillColor=#dae8fc;strokeColor=#6c8ebf;dashed=1;dashPattern=1 1;" parent="zGb-HXnJVVAAqv_T0aW1-69" source="EbMunbrASVV2r2uE1-7z-3" target="RCE_GgjakJLuHdIpDTJi-3" edge="1">
+        <mxCell id="RCE_GgjakJLuHdIpDTJi-6" value="Tag Blobs" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0.491;entryY=-0.05;entryDx=0;entryDy=0;entryPerimeter=0;endArrow=classic;endFill=1;fillColor=#dae8fc;strokeColor=#6c8ebf;dashed=1;dashPattern=1 1;" parent="zGb-HXnJVVAAqv_T0aW1-69" source="EbMunbrASVV2r2uE1-7z-3" target="RCE_GgjakJLuHdIpDTJi-3" edge="1">
           <mxGeometry relative="1" as="geometry">
             <Array as="points">
               <mxPoint x="201" y="119" />
