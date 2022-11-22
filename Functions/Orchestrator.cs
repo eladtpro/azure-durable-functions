@@ -11,9 +11,9 @@ public class Orchestrator
         ActivityAction activity = context.GetInput<ActivityAction>();
         activity.QueryStatus = BlobStatus.Pending;
 
-        //1. Get storage sas token    ++++++++++++++++++++++++++++++++++++++
-        activity = await context.CallActivityAsync<ActivityAction>(nameof(Tokenizer), activity);
-        log.LogInformation($"[Orchestrator] ActivityAction with token {activity}");
+        // //1. Get storage sas token    ++++++++++++++++++++++++++++++++++++++
+        // activity = await context.CallActivityAsync<ActivityAction>(nameof(Tokenizer), activity);
+        // log.LogInformation($"[Orchestrator] ActivityAction with token {activity}");
 
         //2. Check for ready batch files    ++++++++++++++++++++++++++++++++++++++
         activity = await context.CallActivityAsync<ActivityAction>(nameof(Collector), activity);
