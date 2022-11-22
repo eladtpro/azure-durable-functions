@@ -10,7 +10,7 @@ public static class Zipper
     public static async Task<ActivityAction> Run(
         [ActivityTrigger] ActivityAction activity,
         [Blob("zip/{activity.OverrideBatchId}.zip", FileAccess.Write, Connection = "AzureWebJobsZipStorage")] Stream blob,
-        [Blob("images", Connection = "AzureWebJobsFTPStorage")] BlobContainerClient client,
+        [Blob(ActivityAction.ContainerName, Connection = "AzureWebJobsFTPStorage")] BlobContainerClient client,
         ILogger log)
     {
         log.LogInformation($"[Zipper] ActivityTrigger trigger function Processed blob\n activity:{activity}");

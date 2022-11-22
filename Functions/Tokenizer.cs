@@ -9,7 +9,7 @@ public class Tokenizer
     [FunctionName(nameof(Tokenizer))]
     public static async Task<ActivityAction> Run(
         [ActivityTrigger] ActivityAction activity,
-        [Blob("images", Connection = "AzureWebJobsFTPStorage")] BlobContainerClient containerClient,
+        [Blob(ActivityAction.ContainerName, Connection = "AzureWebJobsFTPStorage")] BlobContainerClient containerClient,
         [DurableClient] IDurableEntityClient entity,
         ILogger log)
     {

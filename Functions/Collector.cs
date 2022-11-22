@@ -6,10 +6,11 @@ public class Collector
     public static long ZipBatchSizeMB { get; set; } = long.TryParse(System.Environment.GetEnvironmentVariable("ZipBatchSizeMB"), out long size) ? size : 10485760;
 
 
+
     [FunctionName(nameof(Collector))]
     public static async Task<ActivityAction> Run(
         [ActivityTrigger] ActivityAction activity,
-        [Blob("images", Connection = "AzureWebJobsFTPStorage")] BlobContainerClient containerClient,
+        [Blob(ActivityAction.ContainerName, Connection = "AzureWebJobsFTPStorage")] BlobContainerClient containerClient,
         ILogger log)
     {
         log.LogInformation($"[Collector] ActivityTrigger triggered Function activity:{activity}");

@@ -13,6 +13,10 @@ public class ActivityAction
         Namespace = tags.Namespace;
     }
 
+    // public static string ContainerName => System.Environment.GetEnvironmentVariable("ContainerName");
+    public const string ContainerName = "files";
+
+
     public long Total { get; set; }
     public string Namespace { get; set; } = "default";
     public string QueryBatchId { get; set; }

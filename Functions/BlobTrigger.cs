@@ -4,7 +4,7 @@ public class BlobTrigger
 {
     [FunctionName(nameof(BlobTrigger))]
     public async Task Run(
-        [BlobTrigger("images/{name}", Connection = "AzureWebJobsFTPStorage")] BlobClient blobClient,
+        [BlobTrigger(ActivityAction.ContainerName + "/{name}", Connection = "AzureWebJobsFTPStorage")] BlobClient blobClient,
         [DurableClient] IDurableOrchestrationClient starter,
         ILogger log)
     {
@@ -15,7 +15,7 @@ public class BlobTrigger
         BlobTags tags = new BlobTags(props, blobClient);
         ActivityAction activity = new ActivityAction(tags);
         Response response = await blobClient.WriteTagsAsync(tags);
-        if(response.IsError)
+        if (response.IsError)
             log.LogError(new EventId(1001), response.ToString());
         log.LogInformation($"[BlobTrigger] BlobTags saved for blob {blobClient.Name}, Tags: {tags}");
         await starter.StartNewAsync<ActivityAction>(nameof(Orchestrator), activity);

@@ -11,7 +11,7 @@
         [FunctionName(nameof(Scavenger))]
         public async Task Run(
             [TimerTrigger("0 * * * * *")] TimerInfo myTimer,
-            [Blob("images", Connection = "AzureWebJobsFTPStorage")] BlobContainerClient blobContainerClient,
+            [Blob(ActivityAction.ContainerName, Connection = "AzureWebJobsFTPStorage")] BlobContainerClient blobContainerClient,
             ILogger log)
         {
             log.LogInformation($"[Scavenger] Timer trigger function executed at: {DateTime.Now}");
