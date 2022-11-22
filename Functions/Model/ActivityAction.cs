@@ -2,21 +2,13 @@ namespace ImageIngest.Functions.Model;
 
 public class ActivityAction
 {
+    // IMPORTANT: 
+    // When changing ContainerName make sure to change EventGrid's topic filter
+    // Subject Begins With: blobServices/default/containers/files
+    public const string ContainerName = "files";
     public static TimeSpan Threshold =
         TimeSpan.TryParse(System.Environment.GetEnvironmentVariable("ScavengerOutdatedThreshold"), out TimeSpan span) ? span : TimeSpan.FromMinutes(5);
-
-    public ActivityAction() { }
-
-    public ActivityAction(BlobTags tags)
-    {
-        QueryStatus = tags.Status;
-        Namespace = tags.Namespace;
-    }
-
     // public static string ContainerName => System.Environment.GetEnvironmentVariable("ContainerName");
-    public const string ContainerName = "files";
-
-
     public long Total { get; set; }
     public string Namespace { get; set; } = "default";
     public string QueryBatchId { get; set; }
@@ -24,6 +16,13 @@ public class ActivityAction
     public BlobStatus QueryStatus { get; set; }
     public BlobStatus OverrideStatus { get; set; }
     public SasToken Token { get; set; }
+
+    public ActivityAction() { }
+    public ActivityAction(BlobTags tags)
+    {
+        QueryStatus = tags.Status;
+        Namespace = tags.Namespace;
+    }
 
     //activity.OverrideBatchId = $"{activity.Namespace}-{DateTime.UtcNow.ToString("yyyyMMddHHmmssfff")}";
     public static string EnlistBatchId(string @namespace)
