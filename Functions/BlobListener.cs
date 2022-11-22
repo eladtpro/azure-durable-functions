@@ -11,7 +11,7 @@ public class BlobListener
     public async Task Run(
         // [BlobTrigger("images/{name}", Source = BlobTriggerSource.EventGrid, Connection = "AzureWebJobsFTPStorage")] BlobClient blobClient,
         [EventGridTrigger] EventGridEvent blobEvent, 
-        [Blob("images", Connection = "AzureWebJobsFTPStorage")] BlobContainerClient blobContainerClient,
+        [Blob("files", Connection = "AzureWebJobsFTPStorage")] BlobContainerClient blobContainerClient,
         [DurableClient] IDurableOrchestrationClient starter,
         ILogger log)
     {
